@@ -1,3 +1,199 @@
-body{
-    font-family: Arial;
+body {
+    font-family: Arial, sans-serif;
+    background-color: #07b407d2;
+    margin: 0;
+    padding: 0;
+}
+
+.main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 30px;
+    background-color: rgb(245, 245, 245);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.logo img {
+    width: 110px;
+    height: auto;
+}
+
+.categorias {
+    position: relative;
+}
+
+.cat-btn {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    gap: 6px;
+}
+
+.cat-btn:hover {
+    color: #07b407;
+}
+
+.menu-desplegable {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    list-style: none;
+    padding: 10px 0;
+    width: 160px;
+    z-index: 100;
+    margin: 0;
+}
+
+.categorias:hover .menu-desplegable,
+.menu-desplegable:hover {
+    display: block;
+}
+
+.menu-desplegable li {
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.menu-desplegable li:hover {
+    background-color: #e6e6e6;
+    color: rgb(0, 0, 0);
+}
+
+.menu-desplegable li a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+    width: 100%;
+}
+
+.busqueda {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    margin: 0 30px;
+    max-width: 600px;
+}
+
+.busqueda input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 30px 0 0 30px;
+    outline: none;
+    font-size: 14px;
+}
+
+.busqueda button {
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-left: none;
+    border-radius: 0 30px 30px 0;
+    padding: 10px 15px;
+    cursor: pointer;
+    color: #555;
+}
+
+.busqueda button:hover {
+    color: #07b407;
+}
+
+.cuenta {
+    position: relative;
+}
+
+.cuenta-btn {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    gap: 6px;
+}
+
+.cuenta-btn:hover {
+    color: #07b407;
+}
+
+.menu-cuenta {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    list-style: none;
+    padding: 10px 0;
+    width: 160px;
+    z-index: 100;
+    margin: 0;
+}
+
+.cuenta:hover .menu-cuenta {
+    display: block;
+}
+
+.menu-cuenta li {
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.menu-cuenta li a {
+    text-decoration: none;
+    color: #333;
+    width: 100%;
+    font-weight: normal;
+    display: block;
+}
+
+.menu-cuenta li:hover {
+    background-color: #e6e6e6;
+    color: rgb(0, 0, 0);
+}
+
+.cuenta a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.carrito a {
+    background-color: #07b407;
+    color: #fff;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.carrito a:hover {
+    background-color: #06a306;
+}
+
+footer {
+    background-color: #2d2d2d;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    position: relative;
+    bottom: 0;
+    margin-top: 100px;
 }
