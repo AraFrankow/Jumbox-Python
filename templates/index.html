@@ -4,9 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <title>Jumbox</title>
 </head>
 <body>
-    <h1>Jumbox</h1>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumboz">
+            </a>
+        </div>
+
+        <div class="categorias" tabindex="0">
+            <div class="cat-btn">
+                <i class="fa-solid fa-bars"></i>
+                <span>CATEGORÍAS</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-desplegable" aria-hidden="true">
+                <li><a href="#">Almacén</a></li>
+                <li><a href="#">Bebidas</a></li>
+                <li><a href="#">Limpieza</a></li>
+                <li><a href="#">Alimentos</a></li>
+                <li><a href="#">Congelados</a></li>
+            </ul>
+        </div>
+
+
+        <div class="busqueda">
+            <input type="text" placeholder="Buscar...">
+            <button><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> <span>Cuenta</span> <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                <li><a href="{{ url_for('home') }}">Iniciar Sesión</a></li> <!--Cambiar link-->
+                <li><a href="{{ url_for('home') }}">Registrarse</a></li> <!--Cambiar link-->
+                <!--Hacer que cuando tenga la sesion iniciada: Cuenta pase a ser el Mail, Iniciar Sesion pase a ser Cerrar Sesion y Registrarse no aparezca o pase a ser Configuracion-->
+            </ul>
+        </div>
+
+        <div class="carrito">
+            <a href="#"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
+        </div>
+    </header>
+
+<main>
+
+</main>
+
+<footer>
+    <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+</footer>
 </body>
 </html>
