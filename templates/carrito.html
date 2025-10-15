@@ -16,9 +16,9 @@
   <div class="categorias">
     <div class="cat-btn">Categorías ▾</div>
     <ul class="menu-desplegable">
-      {% for c in categorias or [] %}
-      <li><a href="{{ url_for('productos', categoria=c) }}">{{ c }}</a></li>
-      {% endfor %}
+        {% for c in categorias or [] %}
+        <li><a href="{{ url_for('productos', categoria=c) }}">{{ c }}</a></li>
+        {% endfor %}
     </ul>
   </div>
 
