@@ -11,7 +11,7 @@
     <header class="main-header">
         <div class="logo">
             <a href="{{ url_for('home') }}">
-                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumboz">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
             </a>
         </div>
 
@@ -41,9 +41,21 @@
                 <i class="fa-solid fa-user"></i> <span>Cuenta</span> <i class="fa-solid fa-chevron-down"></i>
             </div>
             <ul class="menu-cuenta" aria-hidden="true">
-                <li><a href="{{ url_for('home') }}">Iniciar Sesión</a></li> <!--Cambiar link-->
-                <li><a href="{{ url_for('home') }}">Registrarse</a></li> <!--Cambiar link-->
-                <!--Hacer que cuando tenga la sesion iniciada: Cuenta pase a ser el Mail, Iniciar Sesion pase a ser Cerrar Sesion y Registrarse no aparezca o pase a ser Configuracion-->
+                {% if session.get('id_cliente') %}
+                {% if session.get('tipo') == 'admin' %}
+                    <!-- Opciones exclusivas del admin -->
+                    <li><a href="{{ url_for('home') }}">Usuarios</a></li>
+                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                {% else %}
+                    <!-- Opciones para usuarios comunes -->
+                    <li><a href="{{ url_for('home') }}">Perfil</a></li>
+                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                {% endif %}
+                {% else %}
+                    <!-- Opciones para visitantes -->
+                    <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                    <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+                {% endif %}
             </ul>
         </div>
 
@@ -51,6 +63,16 @@
             <a href="#"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
         </div>
     </header>
+    
+    <div class="mensajes-flash">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
 
 <main>
 

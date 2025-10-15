@@ -197,3 +197,112 @@ footer {
     bottom: 0;
     margin-top: 100px;
 }
+
+
+
+/* FORMULARIO DE REGISTRO */
+.volver {
+    display: inline-block;
+    margin: 20px 30px 10px 30px;
+    text-decoration: none;
+    color: #f3f3f3;
+    font-weight: bold;
+}
+
+.volver:hover {
+    color: #06a306;
+}
+
+h2 {
+    text-align: center;
+    margin: 20px 0;
+    color: #333;
+    font-size: xx-large;
+}
+
+.formulario-container {
+    max-width: 400px;
+    margin: 60px auto 50px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.formulario-container form div {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.formulario-container label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.formulario-container input {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    outline: none;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.formulario-container input:focus {
+    border-color: #07b407;
+    box-shadow: 0 0 5px #07b40766;
+}
+
+.formulario-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #07b407;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.formulario-container button:hover {
+    background-color: #06a306;
+}
+
+.alert {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.alert.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.main-header {
+    padding: 8px 70px;
+}
+
+.mensajes-flash {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.alert {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}

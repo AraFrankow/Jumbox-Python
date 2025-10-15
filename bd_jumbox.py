@@ -16,9 +16,10 @@ CREATE TABLE IF NOT EXISTS cliente (
   id_cliente INTEGER PRIMARY KEY AUTOINCREMENT,
   nombre TEXT NOT NULL,
   direccion TEXT NOT NULL,
-  telefono INTEGER NOT NULL,
-  contrasena TEXT
-)
+  telefono INTEGER NOT NULL UNIQUE,
+  contrasena TEXT,
+  tipo TEXT DEFAULT 'usuario'
+);
 ''')
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS sucursal (
@@ -129,3 +130,5 @@ CREATE TABLE IF NOT EXISTS almacen_sucursal (
 ''')
 
 
+conn.commit()
+conn.close()
