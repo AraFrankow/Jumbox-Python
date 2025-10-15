@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3
 from flask_bcrypt import Bcrypt
-#a
 
 # telefono admin: 12345678
 # contraseña admin: Admin1234
