@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Productos · JUMBOX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- HEADER (usa tus clases existentes) -->
+<header class="main-header">
+  <div class="logo">
+    <a href="/"><img src="{{ url_for('static', filename='logo.png') }}" alt="JUMBOX"></a>
+  </div>
+
+  <div class="categorias">
+    <div class="cat-btn">Categorías ▾</div>
+    <ul class="menu-desplegable">
+      {% for c in categorias or [] %}
+      <li><a href="{{ url_for('productos', categoria=c) }}">{{ c }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <form class="busqueda" method="get" action="{{ url_for('productos') }}">
+    <input type="text" name="q" value="{{ request.args.get('q','') }}" placeholder="Buscar productos...">
+    <button type="submit">Buscar</button>
+  </form>
+
+  <div class="cuenta">
+    <a class="cuenta-btn" href="#">Mi cuenta ▾</a>
+    <ul class="menu-cuenta">
+      <li><a href="#">Perfil</a></li>
+      <li><a href="#">Salir</a></li>
+    </ul>
+  </div>
+
+  <div class="carrito">
+    <a href="{{ url_for('carrito') }}">🛒 Carrito</a>
+  </div>
+</header>
+
+<main class="contenedor">
+
+  {% if msg %}<div class="alert success mensajes-flash">{{ msg }}</div>{% endif %}
+
+  <!-- FILTROS -->
+  <section class="card">
+    <h2>Productos</h2>
+    <form method="get" action="{{ url_for('productos') }}" class="grid grid3">
+      <div>
+        <label for="inp-q">Buscar</label>
+        <input id="inp-q" type="text" name="q" value="{{ request.args.get('q','') }}" placeholder="Nombre o categoría">
+      </div>
+      <div>
+        <label for="sel-cat">Categoría</label>
+        <select id="sel-cat" name="categoria">
+          <option value="">Todas</option>
+          {% for c in categorias or [] %}
+            <option value="{{ c }}" {{ 'selected' if request.args.get('categoria')==c else '' }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="sel-est">Estado</label>
+        <select id="sel-est" name="estado">
+          <option value="">Todos</option>
+          <option value="1" {{ 'selected' if request.args.get('estado')=='1' else '' }}>Activos</option>
+          <option value="0" {{ 'selected' if request.args.get('estado')=='0' else '' }}>Inactivos</option>
+        </select>
+      </div>
+      <div style="grid-column:1/-1">
+        <button class="btn">Aplicar filtros</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ALTA / EDICIÓN -->
+  <section class="card">
+    <h2>{{ 'Editar producto' if producto_editar else 'Nuevo producto' }}</h2>
+    <form method="post" action="{{ url_for('productos_editar') if producto_editar else url_for('productos_crear') }}" class="grid grid2">
+      {% if producto_editar %}
+        <input type="hidden" name="id" value="{{ producto_editar.id }}">
+      {% endif %}
+      <div>
+        <label>Nombre</label>
+        <input name="nombre" required value="{{ producto_editar.nombre if producto_editar else '' }}">
+      </div>
+      <div>
+        <label>Categoría</label>
+        <input name="categoria" required value="{{ producto_editar.categoria if producto_editar else '' }}">
+      </div>
+      <div>
+        <label>Precio</label>
+        <input type="number" name="precio" min="0" step="0.01" required value="{{ '%.2f'|format(producto_editar.precio) if producto_editar else '' }}">
+      </div>
+      <div>
+        <label>Stock mínimo</label>
+        <input type="number" name="stock_minimo" min="0" step="1" required value="{{ producto_editar.stock_minimo if producto_editar else 0 }}">
+      </div>
+      <div style="grid-column:1/-1">
+        <label>Estado</label>
+        <select name="activo">
+          <option value="1" {{ 'selected' if (producto_editar and producto_editar.activo) else '' }}>Activo</option>
+          <option value="0" {{ 'selected' if (producto_editar and not producto_editar.activo) else '' }}>Inactivo</option>
+        </select>
+      </div>
+      <div class="acciones">
+        <a class="btn" href="{{ url_for('productos') }}">Limpiar</a>
+        <button class="btn primary">{{ 'Guardar cambios' if producto_editar else 'Crear' }}</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- LISTADO -->
+  <section class="card">
+    <div class="tabla-wrapper">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th class="right">Precio</th>
+            <th class="center">Stock mín.</th>
+            <th class="center">Estado</th>
+            <th class="right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if productos and productos|length %}
+          {% for p in productos %}
+          <tr class="{{ '' if p.activo else 'fila-inactiva' }}">
+            <td>#{{ p.id }}</td>
+            <td>{{ p.nombre }}</td>
+            <td><span class="pill">{{ p.categoria }}</span></td>
+            <td class="right">${{ '%.2f'|format(p.precio) }}</td>
+            <td class="center">{{ p.stock_minimo }}</td>
+            <td class="center">
+              {% if p.activo %}
+                <span class="pill ok">Activo</span>
+              {% else %}
+                <span class="pill off">Inactivo</span>
+              {% endif %}
+            </td>
+            <td class="right">
+              <div class="acciones">
+                <form method="get" action="{{ url_for('productos') }}">
+                  <input type="hidden" name="edit" value="{{ p.id }}">
+                  <button class="btn">Editar</button>
+                </form>
+                {% if p.activo %}
+                  <form method="post" action="{{ url_for('productos_desactivar', prod_id=p.id) }}">
+                    <button class="btn danger">Desactivar</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{{ url_for('productos_activar', prod_id=p.id) }}">
+                    <button class="btn success">Activar</button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="7" class="center">No hay productos para mostrar.</td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  © JUMBOX
+</footer>
+</body>
+</html>

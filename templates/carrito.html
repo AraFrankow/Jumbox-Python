@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Carrito · JUMBOX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="main-header">
+  <div class="logo">
+    <a href="/"><img src="{{ url_for('static', filename='logo.png') }}" alt="JUMBOX"></a>
+  </div>
+
+  <div class="categorias">
+    <div class="cat-btn">Categorías ▾</div>
+    <ul class="menu-desplegable">
+      {% for c in categorias or [] %}
+      <li><a href="{{ url_for('productos', categoria=c) }}">{{ c }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <form class="busqueda" method="get" action="{{ url_for('productos') }}">
+    <input type="text" name="q" placeholder="Buscar productos…">
+    <button type="submit">Buscar</button>
+  </form>
+
+  <div class="cuenta">
+    <a class="cuenta-btn" href="#">Mi cuenta ▾</a>
+    <ul class="menu-cuenta">
+      <li><a href="#">Perfil</a></li>
+      <li><a href="#">Salir</a></li>
+    </ul>
+  </div>
+
+  <div class="carrito">
+    <a href="{{ url_for('carrito') }}">🛒 Carrito</a>
+  </div>
+</header>
+
+<main class="contenedor">
+  <h2>Carrito</h2>
+  <p class="muted">Cliente: <strong>{{ cliente.nombre if cliente else 'Invitado' }}</strong></p>
+  {% if msg %}<div class="alert success mensajes-flash">{{ msg }}</div>{% endif %}
+
+  <!-- Cambiar sucursal -->
+  <section class="card">
+    <form method="post" action="{{ url_for('carrito_cambiar_sucursal') }}" class="grid grid2">
+      <div>
+        <label>Sucursal</label>
+        <select name="sucursal_id">
+          {% for s in sucursales or [] %}
+            <option value="{{ s.id }}" {{ 'selected' if sucursal_actual and s.id==sucursal_actual.id else '' }}>
+              {{ s.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="acciones">
+        <button class="btn">Cambiar</button>
+        <a class="btn" href="{{ url_for('productos') }}">+ Agregar productos</a>
+      </div>
+    </form>
+  </section>
+
+  <!-- Items -->
+  <section class="card">
+    <div class="tabla-wrapper">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th class="right">Precio</th>
+            <th class="center">Cantidad</th>
+            <th class="right">Subtotal</th>
+            <th class="right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if items and items|length %}
+          {% for it in items %}
+          <tr>
+            <td>
+              <span class="pill">#{{ it.producto_id }}</span>
+              {{ it.nombre }}
+            </td>
+            <td class="right">${{ '%.2f'|format(it.precio) }}</td>
+            <td class="center">
+              <form method="post" action="{{ url_for('carrito_actualizar_item') }}">
+                <input type="hidden" name="producto_id" value="{{ it.producto_id }}">
+                <input type="number" name="cantidad" min="1" step="1" value="{{ it.cantidad }}" style="width:90px">
+                <button class="btn">Actualizar</button>
+              </form>
+            </td>
+            <td class="right">${{ '%.2f'|format(it.subtotal) }}</td>
+            <td class="right">
+              <form method="post" action="{{ url_for('carrito_eliminar_item') }}">
+                <input type="hidden" name="producto_id" value="{{ it.producto_id }}">
+                <button class="btn danger">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="5" class="center">Tu carrito está vacío.</td></tr>
+        {% endif %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="right">Total</td>
+            <td class="right total-cell">${{ '%.2f'|format(total or 0) }}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+
+  <!-- Checkout -->
+  <section class="card">
+    <h3>Finalizar compra</h3>
+    <form method="post" action="{{ url_for('carrito_checkout') }}" class="grid">
+      <div>
+        <label>Método de pago</label>
+        <select name="metodo_pago" required>
+          {% for mp in metodos_pago or ['EFECTIVO','TARJETA'] %}
+            <option value="{{ mp }}">{{ mp }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Observaciones</label>
+        <textarea name="observaciones" rows="2"></textarea>
+      </div>
+      <button class="btn primary" {% if not items or not items|length %}disabled{% endif %}>Confirmar compra</button>
+    </form>
+  </section>
+
+</main>
+
+<footer>
+  © JUMBOX
+</footer>
+</body>
+</html>
