@@ -176,7 +176,7 @@ def productos():
             FROM producto
             ORDER BY id_producto
         """).fetchall()
-    return render_template('productos.html', productos=productos, categorias=categorias)
+    return render_template('vista_productos.html', productos=productos, categorias=categorias)
 
 # Placeholders para que productos.html no tire BuildError (implementarán luego)
 @app.post('/productos/crear')
@@ -201,7 +201,7 @@ def productos_desactivar(prod_id):
 
 
 # =========================
-# Carrito (sin JS, adaptado a tu DB)
+# Carrito
 # =========================
 @app.get('/carrito')
 def carrito():
@@ -230,7 +230,7 @@ def carrito():
         categorias = listar_categorias(conn)
 
     return render_template(
-        'carrito.html',
+        'vista_carrito.html',
         cliente=cliente,
         categorias=categorias,
         sucursales=sucursales,
@@ -348,7 +348,7 @@ def carrito_checkout():
                 flash("Stock insuficiente para uno o más productos.", "error")
                 return redirect(url_for('carrito'))
 
-        # Descontar stock y vaciar carrito (versión mínima)
+        # Descontar stock y vaciar carrito (versión mínima) 
         for it in items:
             conn.execute("""
                 UPDATE producto
@@ -369,9 +369,5 @@ def carrito_checkout():
 def healthz():
     return "ok", 200
 
-
-# =========================
-# Bootstrap
-# =========================
 if __name__ == '__main__':
     app.run(debug=True)
