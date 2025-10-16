@@ -305,4 +305,94 @@ h2 {
     border-radius: 6px;
     font-weight: bold;
     margin-bottom: 10px;
+<<<<<<< HEAD
 }
+
+/* ===========================
+   Complemento vistas Productos/Carrito
+   =========================== */
+
+   .contenedor {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 24px;
+  }
+  
+  .card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin: 18px 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,.04);
+  }
+  
+  .grid { display: grid; gap: 12px; }
+  .grid2 { grid-template-columns: 1fr 1fr; }
+  .grid3 { grid-template-columns: 1fr 1fr 1fr; }
+  .acciones { display: flex; gap: 8px; justify-content: flex-end; }
+  
+  .btn {
+    display: inline-block;
+    border: 1px solid #bbb;
+    background: #fff;
+    padding: .55rem .9rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #222;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .btn.primary { background-color: #07b407; border-color: #07b407; color: #fff; }
+  .btn.danger  { border-color: #cc3b3b; color: #cc3b3b; }
+  .btn.success { border-color: #2f915f; color: #2f915f; }
+  
+  label { display: block; font-weight: 600; margin-bottom: 6px; color: #333; }
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  
+  .tabla-wrapper { overflow: auto; }
+  .tabla {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+  }
+  .tabla th, .tabla td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+  .tabla th {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #555;
+  }
+  .right { text-align: right; }
+  .center { text-align: center; }
+  
+  .pill {
+    display: inline-block;
+    padding: .2rem .55rem;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    font-size: 12px;
+    background: #fff;
+    color: #333;
+  }
+  .pill.ok  { background: #dff4e5; border-color: #bfe6c6; }
+  .pill.off { background: #f1f1f1; border-color: #ddd; color: #666; }
+  
+  .fila-inactiva { background: #f9f9f9; color: #666; }
+  
+  .total-cell {
+    font-weight: 800;
+  }
+=======
+}
+>>>>>>> main
