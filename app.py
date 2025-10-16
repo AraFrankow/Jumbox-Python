@@ -32,83 +32,55 @@ def pagina_no_encontrada2(e):
 # =========================
 # Registro / Login / Logout
 # =========================
-
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
-        nombre = request.form.get('nombre', '').strip()
-        tel = request.form.get('tel', '').strip()
-        direccion = request.form.get('direccion', '').strip()
-        contra = request.form.get('contra', '')
-        confirmar = request.form.get('confirmar', '')
-
-        # Validaciones básicas
-        if not nombre or not tel or not direccion or not contra:
-            flash('Todos los campos son obligatorios.', 'error')
-            return render_template('registro.html', nombre=nombre, tel=tel, direccion=direccion)
+        nombre = request.form['nombre']
+        tel = request.form['tel']
+        direccion = request.form['direccion']
+        contra = request.form['contra']
+        confirmar = request.form['confirmar']
 
         if contra != confirmar:
             flash('Las contraseñas no coinciden', 'error')
             return render_template('registro.html', nombre=nombre, tel=tel, direccion=direccion)
 
-        # Hashear contraseña
         hash_contra = bcrypt.generate_password_hash(contra).decode('utf-8')
 
-        # Insertar en DB (usar get_conn para tener row_factory y FK on)
         try:
-            with get_conn() as conn:
-                # Verificar si el teléfono ya existe
-                existing = conn.execute("SELECT 1 FROM cliente WHERE telefono = ?", (tel,)).fetchone()
-                if existing:
-                    flash("El teléfono ya está registrado", "error")
-                    return render_template('registro.html', nombre=nombre, tel=tel, direccion=direccion)
+            conn = sqlite3.connect(DB_NAME)
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo)
+                VALUES (?, ?, ?, ?, 'usuario')
+            """, (nombre, direccion, tel, hash_contra))
+            conn.commit()
+            conn.close()
 
-                conn.execute("""
-                    INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (nombre, direccion, tel, hash_contra, 'usuario'))
-                # commit lo hace el context manager si no hay excepciones
-
-            flash("Registro exitoso. Ya podés iniciar sesión.", "success")
-            return redirect(url_for('login'))
+            flash("Registro exitoso", "success")
+            return redirect(url_for('registro'))
         except sqlite3.IntegrityError:
-            flash("El teléfono ya está registrado (error de integridad).", "error")
-            return render_template('registro.html', nombre=nombre, tel=tel, direccion=direccion)
-        except sqlite3.Error as e:
-            # Mensaje genérico para no filtrar detalles sensibles
-            flash("Error al registrar. Intentá nuevamente más tarde.", "error")
-            app.logger.exception("Error en /registro: %s", e)
-            return render_template('registro.html', nombre=nombre, tel=tel, direccion=direccion)
+            flash("El telefono ya está registrado", "error")
+            return redirect(url_for('registro'))
 
     return render_template('registro.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        tel = request.form.get('tel', '').strip()
-        contra = request.form.get('contra', '')
+        tel = request.form['tel']
+        contra = request.form['contra']
 
-        if not tel or not contra:
-            flash("Ingresá teléfono y contraseña.", "error")
-            return render_template('login.html', tel=tel)
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id_cliente, nombre, contrasena, tipo FROM cliente WHERE telefono = ?", (tel,))
+        cliente = cursor.fetchone()
+        conn.close()
 
-        with get_conn() as conn:
-            cursor = conn.execute("SELECT id_cliente, nombre, contrasena, tipo FROM cliente WHERE telefono = ?", (tel,))
-            cliente = cursor.fetchone()
-
-        if cliente and bcrypt.check_password_hash(cliente['contrasena'] if isinstance(cliente, sqlite3.Row) else cliente[2], contra):
-            # cliente puede ser sqlite3.Row -> usar claves; si no, index 2
-            # Normalizamos acceso:
-            if isinstance(cliente, sqlite3.Row):
-                session['id_cliente'] = cliente['id_cliente']
-                session['nombre'] = cliente['nombre']
-                session['tipo'] = cliente['tipo']
-            else:
-                session['id_cliente'] = cliente[0]
-                session['nombre'] = cliente[1]
-                session['tipo'] = cliente[3]
-
+        if cliente and bcrypt.check_password_hash(cliente[2], contra):
+            session['id_cliente'] = cliente[0]
+            session['nombre'] = cliente[1]
+            session['tipo'] = cliente[3]
             flash("Inicio de sesión exitoso", "success")
             return redirect(url_for('home'))
 
@@ -116,7 +88,6 @@ def login():
         return render_template('login.html', tel=tel)
 
     return render_template('login.html')
-
 
 @app.route('/logout')
 def logout():
@@ -397,7 +368,6 @@ def carrito_checkout():
 @app.get("/healthz")
 def healthz():
     return "ok", 200
-
 
 if __name__ == '__main__':
     app.run(debug=True)
