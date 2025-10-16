@@ -5,13 +5,14 @@
   <title>Productos · JUMBOX</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
 <header class="main-header">
-  <div class="logo">
-    <a href="/"><img src="{{ url_for('static', filename='logo.png') }}" alt="JUMBOX"></a>
-  </div>
+  <a href="{{ url_for('home') }}" class="logo">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+  </a>
 
   <div class="categorias">
     <div class="cat-btn">Categorías ▾</div>
@@ -75,7 +76,6 @@
     </form>
   </section>
 
-  <!-- Reemplaza TODO el bloque de ALTA/EDICIÓN y Acciones por esto -->
 <section class="card">
   <h2>Listado de productos</h2>
   <div class="tabla-wrapper">
@@ -116,7 +116,6 @@
             <th>Nombre</th>
             <th>Categoría</th>
             <th class="right">Precio</th>
-            <th class="center">Stock mín.</th>
             <th class="center">Estado</th>
             <th class="right">Acciones</th>
           </tr>
