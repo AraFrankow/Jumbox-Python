@@ -28,10 +28,13 @@ def pagina_no_encontrada(e):
 def pagina_no_encontrada2(e):
     return render_template('404.html'), 405
 
+<<<<<<< HEAD
 
 # =========================
 # Registro / Login / Logout
 # =========================
+=======
+>>>>>>> main
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
@@ -44,15 +47,28 @@ def registro():
         if contra != confirmar:
             flash('Las contraseñas no coinciden', 'error')
             return render_template('registro.html', nombre=nombre, tel=tel, direccion=direccion)
+<<<<<<< HEAD
 
         hash_contra = bcrypt.generate_password_hash(contra).decode('utf-8')
 
+=======
+        
+        
+
+        hash_contra = bcrypt.generate_password_hash(contra).decode('utf-8')
+        
+>>>>>>> main
         try:
             conn = sqlite3.connect(DB_NAME)
             cursor = conn.cursor()
             cursor.execute("""
+<<<<<<< HEAD
                 INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo)
                 VALUES (?, ?, ?, ?, 'usuario')
+=======
+                INSERT INTO cliente (nombre, direccion, telefono, contrasena)
+                VALUES (?, ?, ?, ?)
+>>>>>>> main
             """, (nombre, direccion, tel, hash_contra))
             conn.commit()
             conn.close()
@@ -70,13 +86,18 @@ def login():
     if request.method == 'POST':
         tel = request.form['tel']
         contra = request.form['contra']
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> main
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
         cursor.execute("SELECT id_cliente, nombre, contrasena, tipo FROM cliente WHERE telefono = ?", (tel,))
         cliente = cursor.fetchone()
         conn.close()
 
+<<<<<<< HEAD
         if cliente and bcrypt.check_password_hash(cliente[2], contra):
             session['id_cliente'] = cliente[0]
             session['nombre'] = cliente[1]
@@ -84,17 +105,32 @@ def login():
             flash("Inicio de sesión exitoso", "success")
             return redirect(url_for('home'))
 
+=======
+        if cliente:
+            if bcrypt.check_password_hash(cliente[2], contra):
+                session['id_cliente'] = cliente[0]
+                session['nombre'] = cliente[1]
+                session['tipo'] = cliente[3]
+                flash("Inicio de sesión exitoso", "success")
+                return redirect(url_for('home'))
+        
+>>>>>>> main
         flash("Credenciales incorrectas", "error")
         return render_template('login.html', tel=tel)
 
     return render_template('login.html')
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 @app.route('/logout')
 def logout():
     session.clear()
     flash('Sesión cerrada correctamente', 'success')
     return redirect(url_for('home'))
 
+<<<<<<< HEAD
 
 # =========================
 # Helpers de DB / sesión
@@ -368,6 +404,8 @@ def carrito_checkout():
 @app.get("/healthz")
 def healthz():
     return "ok", 200
+=======
+>>>>>>> main
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -83,3 +84,90 @@
     </footer>
     </body>
     </html>
+=======
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Jumbox</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+            </a>
+        </div>
+
+        <div class="categorias" tabindex="0">
+            <div class="cat-btn">
+                <i class="fa-solid fa-bars"></i>
+                <span>CATEGORÍAS</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-desplegable" aria-hidden="true">
+                <li><a href="#">Almacén</a></li>
+                <li><a href="#">Bebidas</a></li>
+                <li><a href="#">Limpieza</a></li>
+                <li><a href="#">Alimentos</a></li>
+                <li><a href="#">Congelados</a></li>
+            </ul>
+        </div>
+
+
+        <div class="busqueda">
+            <input type="text" placeholder="Buscar...">
+            <button><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+
+        <div class="cuenta" tabindex="0">
+            <div class="cuenta-btn">
+                <i class="fa-solid fa-user"></i> <span>Cuenta</span> <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="menu-cuenta" aria-hidden="true">
+                {% if session.get('id_cliente') %}
+                {% if session.get('tipo') == 'admin' %}
+                    <!-- Opciones exclusivas del admin -->
+                    <li><a href="{{ url_for('home') }}">Usuarios</a></li>
+                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                {% else %}
+                    <!-- Opciones para usuarios comunes -->
+                    <li><a href="{{ url_for('home') }}">Perfil</a></li>
+                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                {% endif %}
+                {% else %}
+                    <!-- Opciones para visitantes -->
+                    <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                    <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="carrito">
+            <a href="#"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
+        </div>
+    </header>
+    
+    <div class="mensajes-flash">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+<main>
+
+</main>
+
+<footer>
+    <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+</footer>
+</body>
+</html>
+>>>>>>> main
