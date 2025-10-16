@@ -75,42 +75,36 @@
     </form>
   </section>
 
-  <!-- ALTA / EDICIÓN -->
-  <section class="card">
-    <h2>{{ 'Editar producto' if producto_editar else 'Nuevo producto' }}</h2>
-    <form method="post" action="{{ url_for('productos_editar') if producto_editar else url_for('productos_crear') }}" class="grid grid2">
-      {% if producto_editar %}
-        <input type="hidden" name="id" value="{{ producto_editar.id }}">
-      {% endif %}
-      <div>
-        <label>Nombre</label>
-        <input name="nombre" required value="{{ producto_editar.nombre if producto_editar else '' }}">
-      </div>
-      <div>
-        <label>Categoría</label>
-        <input name="categoria" required value="{{ producto_editar.categoria if producto_editar else '' }}">
-      </div>
-      <div>
-        <label>Precio</label>
-        <input type="number" name="precio" min="0" step="0.01" required value="{{ '%.2f'|format(producto_editar.precio) if producto_editar else '' }}">
-      </div>
-      <div>
-        <label>Stock mínimo</label>
-        <input type="number" name="stock_minimo" min="0" step="1" required value="{{ producto_editar.stock_minimo if producto_editar else 0 }}">
-      </div>
-      <div style="grid-column:1/-1">
-        <label>Estado</label>
-        <select name="activo">
-          <option value="1" {{ 'selected' if (producto_editar and producto_editar.activo) else '' }}>Activo</option>
-          <option value="0" {{ 'selected' if (producto_editar and not producto_editar.activo) else '' }}>Inactivo</option>
-        </select>
-      </div>
-      <div class="acciones">
-        <a class="btn" href="{{ url_for('productos') }}">Limpiar</a>
-        <button class="btn primary">{{ 'Guardar cambios' if producto_editar else 'Crear' }}</button>
-      </div>
-    </form>
-  </section>
+  <!-- Reemplaza TODO el bloque de ALTA/EDICIÓN y Acciones por esto -->
+<section class="card">
+  <h2>Listado de productos</h2>
+  <div class="tabla-wrapper">
+    <table class="tabla">
+      <thead>
+        <tr><th>ID</th><th>Nombre</th><th class="right">Precio</th><th class="center">Stock</th><th class="right">Agregar</th></tr>
+      </thead>
+      <tbody>
+        {% for p in productos %}
+        <tr>
+          <td>#{{ p.id }}</td>
+          <td>{{ p.nombre }}</td>
+          <td class="right">${{ '%.2f'|format(p.precio) }}</td>
+          <td class="center">{{ p.stock }}</td>
+          <td class="right">
+            <form method="post" action="{{ url_for('carrito_actualizar_item') }}">
+              <input type="hidden" name="producto_id" value="{{ p.id }}">
+              <input type="number" name="cantidad" min="1" value="1" style="width:80px">
+              <button class="btn">Agregar</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+          <tr><td colspan="5" class="center">Sin productos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 
   <!-- LISTADO -->
   <section class="card">

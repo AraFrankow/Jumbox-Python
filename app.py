@@ -14,7 +14,7 @@ DB_NAME = "jumbox.db"
 
 
 # =========================
-# Rutas base existentes
+# Rutas base
 # =========================
 @app.route('/')
 def home():
@@ -28,6 +28,10 @@ def pagina_no_encontrada(e):
 def pagina_no_encontrada2(e):
     return render_template('404.html'), 405
 
+
+# =========================
+# Registro / Login / Logout
+# =========================
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
@@ -93,7 +97,7 @@ def logout():
 
 
 # =========================
-# Helpers de DB y Carrito
+# Helpers de DB / sesión
 # =========================
 def get_conn():
     """Conexión SQLite con row_factory y FK on."""
@@ -103,36 +107,25 @@ def get_conn():
     return conn
 
 def require_login_redirect():
-    """Si no hay sesión, redirige a login y devuelve esa Response; si hay sesión, devuelve None."""
+    """Si no hay sesión, redirige a /login. Si hay sesión, devuelve None."""
     if 'id_cliente' not in session:
         flash("Necesitás iniciar sesión.", "error")
         return redirect(url_for('login'))
     return None
 
 def ensure_carrito_abierto(conn, id_cliente: int):
-    """
-    Busca el carrito del cliente (en tu esquema no hay estado).
-    Si no existe, lo crea.
-    """
+    """Tu tabla carrito no tiene estado: 1 carrito por cliente. Si no existe, lo crea."""
     car = conn.execute(
         "SELECT * FROM carrito WHERE fk_cliente=? LIMIT 1",
         (id_cliente,)
     ).fetchone()
     if car:
         return car
-    cur = conn.execute(
-        "INSERT INTO carrito(fk_cliente) VALUES (?)",
-        (id_cliente,)
-    )
-    return conn.execute(
-        "SELECT * FROM carrito WHERE id_carrito=?",
-        (cur.lastrowid,)
-    ).fetchone()
+    cur = conn.execute("INSERT INTO carrito(fk_cliente) VALUES (?)", (id_cliente,))
+    return conn.execute("SELECT * FROM carrito WHERE id_carrito=?", (cur.lastrowid,)).fetchone()
 
 def leer_items(conn, id_carrito: int):
-    """
-    Lee items del carrito junto con datos del producto.
-    """
+    """Items del carrito + datos de producto."""
     rows = conn.execute("""
         SELECT
             pc.fk_producto              AS producto_id,
@@ -148,43 +141,122 @@ def leer_items(conn, id_carrito: int):
     total = sum(r['subtotal'] for r in rows) if rows else 0.0
     return rows, total
 
+def listar_sucursales(conn):
+    """Tu tabla sucursal no tiene nombre: generamos 'Sucursal #ID'."""
+    return conn.execute("""
+        SELECT id_sucursal AS id, ('Sucursal #' || id_sucursal) AS nombre
+        FROM sucursal
+        ORDER BY id_sucursal
+    """).fetchall()
+
+def listar_categorias(conn):
+    try:
+        return [r['nombre'] for r in conn.execute("SELECT nombre FROM categoria ORDER BY nombre").fetchall()]
+    except sqlite3.Error:
+        return []
+
+
+# =========================
+# Productos (listado mínimo + placeholders CRUD)
+# =========================
+@app.get('/productos')
+def productos():
+    with get_conn() as conn:
+        categorias = listar_categorias(conn)
+        # Alias para que tu template que usa categoria/stock_minimo/activo no rompa.
+        productos = conn.execute("""
+            SELECT
+                id_producto AS id,
+                nombre,
+                precio,
+                stock,                 -- lo usamos si lo querés mostrar
+                NULL  AS categoria,    -- tu tabla no lo tiene como texto
+                0     AS stock_minimo, -- no existe en tu schema
+                1     AS activo        -- no existe en tu schema
+            FROM producto
+            ORDER BY id_producto
+        """).fetchall()
+    return render_template('productos.html', productos=productos, categorias=categorias)
+
+# Placeholders para que productos.html no tire BuildError (implementarán luego)
+@app.post('/productos/crear')
+def productos_crear():
+    flash("Crear producto: pendiente de implementar", "error")
+    return redirect(url_for('productos'))
+
+@app.post('/productos/editar')
+def productos_editar():
+    flash("Editar producto: pendiente de implementar", "error")
+    return redirect(url_for('productos'))
+
+@app.post('/productos/<int:prod_id>/activar')
+def productos_activar(prod_id):
+    flash(f"Activar producto {prod_id}: pendiente", "error")
+    return redirect(url_for('productos'))
+
+@app.post('/productos/<int:prod_id>/desactivar')
+def productos_desactivar(prod_id):
+    flash(f"Desactivar producto {prod_id}: pendiente", "error")
+    return redirect(url_for('productos'))
+
 
 # =========================
 # Carrito (sin JS, adaptado a tu DB)
 # =========================
 @app.get('/carrito')
 def carrito():
-    # Login requerido
     resp = require_login_redirect()
-    if resp: 
+    if resp:
         return resp
 
     id_cliente = session['id_cliente']
     cliente = {"id_cliente": id_cliente, "nombre": session.get('nombre', 'Usuario')}
 
     with get_conn() as conn:
+        # sucursales
+        sucursales = listar_sucursales(conn)
+        if not sucursales:
+            flash("No hay sucursales cargadas.", "error")
+            return redirect(url_for('home'))
+
+        if 'sucursal_id' not in session:
+            session['sucursal_id'] = sucursales[0]['id']
+        sucursal_actual = next((s for s in sucursales if s['id'] == session['sucursal_id']), sucursales[0])
+
+        # carrito + items
         car = ensure_carrito_abierto(conn, id_cliente)
         items, total = leer_items(conn, car['id_carrito'])
 
-        # categorías solo si existe esa tabla (para el menú del header)
-        try:
-            categorias = [r['nombre'] for r in conn.execute("SELECT nombre FROM categoria").fetchall()]
-        except sqlite3.Error:
-            categorias = []
+        categorias = listar_categorias(conn)
 
     return render_template(
         'carrito.html',
         cliente=cliente,
         categorias=categorias,
+        sucursales=sucursales,
+        sucursal_actual=sucursal_actual,
         items=items,
         total=total,
         metodos_pago=['EFECTIVO', 'TARJETA']
     )
 
+@app.post('/carrito/sucursal')
+def carrito_cambiar_sucursal():
+    resp = require_login_redirect()
+    if resp:
+        return resp
+    sucursal_id = request.form.get('sucursal_id', type=int)
+    if not sucursal_id:
+        flash("Seleccioná una sucursal.", "error")
+    else:
+        session['sucursal_id'] = sucursal_id
+        flash("Sucursal actualizada.", "success")
+    return redirect(url_for('carrito'))
+
 @app.post('/carrito/items/update')
 def carrito_actualizar_item():
     resp = require_login_redirect()
-    if resp: 
+    if resp:
         return resp
 
     id_cliente  = session['id_cliente']
@@ -198,7 +270,6 @@ def carrito_actualizar_item():
     with get_conn() as conn:
         car = ensure_carrito_abierto(conn, id_cliente)
 
-        # Existe el item?
         ex = conn.execute("""
             SELECT id_producto_carrito
             FROM producto_carrito
@@ -223,7 +294,7 @@ def carrito_actualizar_item():
 @app.post('/carrito/items/remove')
 def carrito_eliminar_item():
     resp = require_login_redirect()
-    if resp: 
+    if resp:
         return resp
 
     id_cliente  = session['id_cliente']
@@ -245,11 +316,11 @@ def carrito_eliminar_item():
 @app.post('/carrito/checkout')
 def carrito_checkout():
     resp = require_login_redirect()
-    if resp: 
+    if resp:
         return resp
 
     metodo_pago   = request.form.get('metodo_pago')
-    observaciones = request.form.get('observaciones', '')  # por ahora no se guarda
+    observaciones = request.form.get('observaciones', '')  # hoy no se persiste
 
     if metodo_pago not in ('EFECTIVO', 'TARJETA'):
         flash("Seleccioná un método de pago válido.", "error")
@@ -271,13 +342,13 @@ def carrito_checkout():
             flash("Tu carrito está vacío.", "error")
             return redirect(url_for('carrito'))
 
-        # Validar stock global (según tu schema)
+        # Validar stock global (tu schema)
         for it in items:
             if it['stock'] < it['cantidad']:
                 flash("Stock insuficiente para uno o más productos.", "error")
                 return redirect(url_for('carrito'))
 
-        # Descontar stock y vaciar carrito (versión mínima con tu schema actual)
+        # Descontar stock y vaciar carrito (versión mínima)
         for it in items:
             conn.execute("""
                 UPDATE producto
@@ -290,6 +361,10 @@ def carrito_checkout():
     flash("¡Compra confirmada! (se descontó stock y se vació el carrito)", "success")
     return redirect(url_for('carrito'))
 
+
+# =========================
+# Utilidad
+# =========================
 @app.get("/healthz")
 def healthz():
     return "ok", 200
