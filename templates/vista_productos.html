@@ -9,35 +9,60 @@
 </head>
 <body>
 
-<header class="main-header">
-  <a href="{{ url_for('home') }}" class="logo">
-    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
-  </a>
+  <header class="main-header">
+    <div class="logo">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
+        </a>
+    </div>
 
-  <div class="categorias">
-    <div class="cat-btn">Categorías ▾</div>
-    <ul class="menu-desplegable">
-      {% for c in categorias or [] %}
-      <li><a href="{{ url_for('productos', categoria=c) }}">{{ c }}</a></li>
-      {% endfor %}
-    </ul>
-  </div>
+    <div class="categorias" tabindex="0">
+        <div class="cat-btn">
+            <i class="fa-solid fa-bars"></i>
+            <span>CATEGORÍAS</span>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <ul class="menu-desplegable" aria-hidden="true">
+            <li><a href="#">Almacén</a></li>
+            <li><a href="#">Bebidas</a></li>
+            <li><a href="#">Limpieza</a></li>
+            <li><a href="#">Alimentos</a></li>
+            <li><a href="#">Congelados</a></li>
+        </ul>
+    </div>
 
-  <form class="busqueda" method="get" action="{{ url_for('productos') }}">
-    <input type="text" name="q" value="{{ request.args.get('q','') }}" placeholder="Buscar productos...">
-    <button type="submit">Buscar</button>
-  </form>
 
-  <div class="cuenta">
-    <a class="cuenta-btn" href="#">Mi cuenta ▾</a>
-    <ul class="menu-cuenta">
-      <li><a href="#">Salir</a></li>
-    </ul>
-  </div>
+    <div class="busqueda">
+        <input type="text" placeholder="Buscar...">
+        <button><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
 
-  <div class="carrito">
-    <a href="{{ url_for('carrito') }}">🛒 Carrito</a>
-  </div>
+    <div class="cuenta" tabindex="0">
+        <div class="cuenta-btn">
+            <i class="fa-solid fa-user"></i> <span>Cuenta</span> <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <ul class="menu-cuenta" aria-hidden="true">
+            {% if session.get('id_cliente') %}
+            {% if session.get('tipo') == 'admin' %}
+                <!-- Opciones exclusivas del admin -->
+                <li><a href="{{ url_for('home') }}">Usuarios</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            {% else %}
+                <!-- Opciones para usuarios comunes -->
+                <li><a href="{{ url_for('home') }}">Perfil</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            {% endif %}
+            {% else %}
+                <!-- Opciones para visitantes -->
+                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="carrito">
+        <a href="#"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
+    </div>
 </header>
 
 <main class="contenedor">
@@ -165,7 +190,7 @@
 </main>
 
 <footer>
-  © JUMBOX
+  <p>© 2025 Jumbox. Todos los derechos reservados.</p>
 </footer>
 </body>
 </html>
