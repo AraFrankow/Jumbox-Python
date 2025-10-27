@@ -362,12 +362,7 @@ def carrito_checkout():
     return redirect(url_for('carrito'))
 
 
-# =========================
-# Utilidad
-# =========================
-@app.get("/healthz")
-def healthz():
-    return "ok", 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
