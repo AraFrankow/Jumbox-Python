@@ -361,7 +361,16 @@ def carrito_checkout():
     flash("¡Compra confirmada! (se descontó stock y se vació el carrito)", "success")
     return redirect(url_for('carrito'))
 
+#Admin
+@app.route('/administracion')
+def admin():
+    resp = require_login_redirect()
+    return render_template('admin.html')
 
+@app.route('/crear-producto')
+def crear_producto():
+    resp = require_login_redirect()
+    return render_template('crear_producto.html')
 
 
 if __name__ == '__main__':

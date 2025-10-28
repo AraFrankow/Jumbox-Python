@@ -44,7 +44,7 @@
                 {% if session.get('id_cliente') %}
                 {% if session.get('tipo') == 'admin' %}
                     <!-- Opciones exclusivas del admin -->
-                    <li><a href="{{ url_for('home') }}">Usuarios</a></li>
+                    <li><a href="{{ url_for('admin') }}">Admin</a></li>
                     <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
                 {% else %}
                     <!-- Opciones para usuarios comunes -->
