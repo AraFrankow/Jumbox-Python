@@ -163,26 +163,20 @@ def listar_categorias(conn):
 def productos():
     with get_conn() as conn:
         categorias = listar_categorias(conn)
-        # Alias para que tu template que usa categoria/stock_minimo/activo no rompa.
         productos = conn.execute("""
             SELECT
                 id_producto AS id,
                 nombre,
                 precio,
-                stock,                 -- lo usamos si lo querés mostrar
-                NULL  AS categoria,    -- tu tabla no lo tiene como texto
-                0     AS stock_minimo, -- no existe en tu schema
-                1     AS activo        -- no existe en tu schema
+                stock,                 
+                NULL  AS categoria,    
+                0     AS stock_minimo, 
+                1     AS activo        
             FROM producto
             ORDER BY id_producto
         """).fetchall()
     return render_template('vista_productos.html', productos=productos, categorias=categorias)
 
-# Placeholders para que productos.html no tire BuildError (implementarán luego)
-@app.post('/productos/crear')
-def productos_crear():
-    flash("Crear producto: pendiente de implementar", "error")
-    return redirect(url_for('productos'))
 
 @app.post('/productos/editar')
 def productos_editar():
@@ -369,8 +363,21 @@ def admin():
 
 @app.route('/crear-producto')
 def crear_producto():
-    resp = require_login_redirect()
-    return render_template('crear_producto.html')
+    with get_conn() as conn:
+        categorias = listar_categorias(conn)
+        productos = conn.execute("""
+            SELECT
+                id_producto AS id,
+                nombre,
+                precio,
+                stock,                 
+                NULL  AS categoria,    
+                0     AS stock_minimo, 
+                1     AS activo        
+            FROM producto
+            ORDER BY id_producto
+        """).fetchall()
+    return render_template('crear_producto.html', productos=productos, categorias=categorias)
 
 
 if __name__ == '__main__':

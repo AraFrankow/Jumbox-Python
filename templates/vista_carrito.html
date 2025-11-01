@@ -45,7 +45,7 @@
             {% if session.get('id_cliente') %}
             {% if session.get('tipo') == 'admin' %}
                 <!-- Opciones exclusivas del admin -->
-                <li><a href="{{ url_for('home') }}">Usuarios</a></li>
+                <li><a href="{{ url_for('admin') }}">Admin</a></li>
                 <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
             {% else %}
                 <!-- Opciones para usuarios comunes -->
@@ -157,7 +157,7 @@
       </div>
       <div>
         <label>Observaciones</label>
-        <textarea name="observaciones" rows="2"></textarea>
+        <textarea name="observaciones" rows="3"></textarea>
       </div>
       <button class="btn primary" {% if not items or not items|length %}disabled{% endif %}>Confirmar compra</button>
     </form>

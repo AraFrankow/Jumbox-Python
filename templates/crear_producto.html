@@ -62,9 +62,9 @@
                     <label for="sel-cat">Categoría</label>
                     <select id="sel-cat" name="categoria">
                         <option value="">Todas</option>
-                            {% for c in categorias or [] %}
+                        {% for c in categorias or [] %}
                             <option value="{{ c }}" {{ 'selected' if request.args.get('categoria')==c else '' }}>{{ c }}</option>
-                            {% endfor %}
+                        {% endfor %}
                     </select>
                 </div>
                 

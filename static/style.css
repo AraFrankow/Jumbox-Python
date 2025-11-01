@@ -347,9 +347,15 @@ Complemento vistas Productos/Carrito
 .btn.danger  { border-color: #cc3b3b; color: #cc3b3b; }
 .btn.success { border-color: #2f915f; color: #2f915f; }
 
-label { display: block; font-weight: 600; margin-bottom: 6px; color: #333; }
+label { 
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333; 
+}
+
 input, select, textarea {
-    width: 100%;
+    width: 95%;
     padding: 10px 12px;
     border: 1px solid #ccc;
     border-radius: 10px;
@@ -423,4 +429,37 @@ input, select, textarea {
     box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
 }
 
+/*====ERROR 404====*/
+.error-container {
+    text-align: center;
+    padding: 40px 60px;
+    border-radius: 12px;
+}
 
+.error-container h1 {
+    font-size: 100px;
+    margin: 0;
+    color: #f4f4f4;
+}
+
+.error-container p {
+    font-size: 20px;
+    color: #262626;
+    margin: 15px 0 25px;
+}
+
+.error-container a {
+    display: inline-block;
+    text-decoration: none;
+    background-color: #f4f4f4;
+    color: rgb(0, 113, 17);
+    padding: 10px 25px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.error-container a:hover {
+    background-color: rgb(0, 113, 17);
+    color: #f4f4f4;
+}
+/*=================*/
