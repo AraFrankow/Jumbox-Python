@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS producto (
   precio REAL NOT NULL,
   stock INTEGER NOT NULL,
   fk_categoria INTEGER NOT NULL,
+  imagen BLOB,
   FOREIGN KEY (fk_categoria) REFERENCES categoria(id_categoria)
     ON DELETE NO ACTION ON UPDATE NO ACTION
 )

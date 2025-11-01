@@ -42,35 +42,38 @@
 
     <main>
         <div class="formulario-container">
-            <form method="POST" action="{{ url_for('registro') }}">
+            <form method="POST" enctype="multipart/form-data">
                 <div>
-                    <label for="nombre"><strong>Nombre</strong></label>
-                    <input type="text" name="nombre"  value="{{ nombre or '' }}" required>
+                    <label for="nombre"><strong>Nombre del Producto</strong></label>
+                    <input type="text" id="nombre" name="nombre" placeholder="Ej: Coca Cola 2L" required>
                 </div>
                 
                 <div>
                     <label for="precio"><strong>Precio</strong></label>
-                    <input type="number" name="precio"  value="{{ precio or '' }}" required>
+                    <input type="number" id="precio" name="precio" step="0.01" placeholder="Ej: 1500.00" required>
                 </div>
     
                 <div>
                     <label for="stock"><strong>Stock</strong></label>
-                    <input type="number" name="stock"  value="{{ stock or '' }}" required>
+                    <input type="number" id="stock" name="stock" placeholder="Ej: 50" required>
                 </div>
                 
                 <div>
-                    <label for="sel-cat">Categoría</label>
-                    <select id="sel-cat" name="categoria">
-                        <option value="">Todas</option>
+                    <label for="categoria"><strong>Categoría</strong></label>
+                    <select id="categoria" name="categoria" required>
+                        <option value="">Seleccionar categoría</option>
                         {% for c in categorias or [] %}
-                            <option value="{{ c }}" {{ 'selected' if request.args.get('categoria')==c else '' }}>{{ c }}</option>
+                            <option value="{{ c }}">{{ c }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 
                 <div>
-                    <label for="imagen"><strong>Imagen</strong></label>
-                    <input type="file" name="imagen" required>
+                    <label for="imagen"><strong>Imagen del Producto</strong></label>
+                    <input type="file" id="imagen" name="imagen" accept="image/*" required>
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        Formatos permitidos: PNG, JPG, JPEG, GIF, WEBP
+                    </small>
                 </div>
     
                 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -81,7 +84,7 @@
                     {% endif %}
                 {% endwith %}
             
-                <button type="submit">Crear</button>
+                <button type="submit">Crear Producto</button>
             </form>
         </div>
     </main>

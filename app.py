@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3
+import base64
 from flask_bcrypt import Bcrypt
 
 # telefono admin: 12345678
@@ -12,13 +13,41 @@ app.secret_key = 'clave_secreta_super_segura'
 bcrypt = Bcrypt(app)
 DB_NAME = "jumbox.db"
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # =========================
 # Rutas base
 # =========================
 @app.route('/')
 def home():
-    return render_template('index.html')
+    # Obtener todos los productos para mostrar en el inicio
+    with get_conn() as conn:
+        productos = conn.execute("""
+            SELECT
+                id_producto AS id,
+                nombre,
+                precio,
+                stock,
+                imagen,
+                fk_categoria
+            FROM producto
+            ORDER BY id_producto DESC
+        """).fetchall()
+        
+        # Convertir las imágenes a base64 para mostrarlas en HTML
+        productos_con_imagen = []
+        for p in productos:
+            producto_dict = dict(p)
+            if producto_dict['imagen']:
+                producto_dict['imagen_base64'] = base64.b64encode(producto_dict['imagen']).decode('utf-8')
+            else:
+                producto_dict['imagen_base64'] = None
+            productos_con_imagen.append(producto_dict)
+    
+    return render_template('index.html', productos=productos_con_imagen)
 
 @app.errorhandler(404)
 def pagina_no_encontrada(e):
@@ -359,25 +388,69 @@ def carrito_checkout():
 @app.route('/administracion')
 def admin():
     resp = require_login_redirect()
+    if resp:
+        return resp
     return render_template('admin.html')
 
-@app.route('/crear-producto')
+@app.route('/crear-producto', methods=['GET', 'POST'])
 def crear_producto():
+    resp = require_login_redirect()
+    if resp:
+        return resp
+    
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        precio = request.form.get('precio')
+        stock = request.form.get('stock')
+        categoria = request.form.get('categoria')
+        
+        # Validaciones básicas
+        if not nombre or not precio or not stock or not categoria:
+            flash('Todos los campos son obligatorios', 'error')
+            return redirect(url_for('crear_producto'))
+        
+        try:
+            precio = float(precio)
+            stock = int(stock)
+        except ValueError:
+            flash('Precio y stock deben ser números válidos', 'error')
+            return redirect(url_for('crear_producto'))
+        
+        # Manejo de la imagen
+        imagen_data = None
+        if 'imagen' in request.files:
+            file = request.files['imagen']
+            if file and file.filename != '':
+                if allowed_file(file.filename):
+                    imagen_data = file.read()
+                else:
+                    flash('Formato de imagen no permitido. Usa PNG, JPG, JPEG, GIF o WEBP', 'error')
+                    return redirect(url_for('crear_producto'))
+        
+        # Obtener el id de la categoría
+        with get_conn() as conn:
+            cat_row = conn.execute("SELECT id_categoria FROM categoria WHERE nombre = ?", (categoria,)).fetchone()
+            if not cat_row:
+                flash('Categoría no válida', 'error')
+                return redirect(url_for('crear_producto'))
+            
+            fk_categoria = cat_row['id_categoria']
+            
+            # Insertar el producto
+            conn.execute("""
+                INSERT INTO producto (nombre, precio, stock, fk_categoria, imagen)
+                VALUES (?, ?, ?, ?, ?)
+            """, (nombre, precio, stock, fk_categoria, imagen_data))
+            conn.commit()
+        
+        flash('Producto creado exitosamente', 'success')
+        return redirect(url_for('home'))
+    
+    # GET - Mostrar el formulario
     with get_conn() as conn:
         categorias = listar_categorias(conn)
-        productos = conn.execute("""
-            SELECT
-                id_producto AS id,
-                nombre,
-                precio,
-                stock,                 
-                NULL  AS categoria,    
-                0     AS stock_minimo, 
-                1     AS activo        
-            FROM producto
-            ORDER BY id_producto
-        """).fetchall()
-    return render_template('crear_producto.html', productos=productos, categorias=categorias)
+    
+    return render_template('crear_producto.html', categorias=categorias)
 
 
 if __name__ == '__main__':

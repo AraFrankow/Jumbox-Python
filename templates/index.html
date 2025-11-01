@@ -30,7 +30,6 @@
             </ul>
         </div>
 
-
         <div class="busqueda">
             <input type="text" placeholder="Buscar...">
             <button><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -74,12 +73,59 @@
         {% endwith %}
     </div>
 
-<main>
+    <main>
+        <div class="productos-container">
+            <h2>Nuestros Productos</h2>
+            
+            {% if productos %}
+            <div class="productos-grid">
+                {% for producto in productos %}
+                <div class="producto-card">
+                    <div class="producto-imagen">
+                        {% if producto.imagen_base64 %}
+                            <img src="data:image/jpeg;base64,{{ producto.imagen_base64 }}" alt="{{ producto.nombre }}">
+                        {% else %}
+                            <div class="sin-imagen">
+                                <i class="fa-solid fa-image"></i>
+                                <p>Sin imagen</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="producto-info">
+                        <h3>{{ producto.nombre }}</h3>
+                        <p class="producto-precio">${{ "%.2f"|format(producto.precio) }}</p>
+                        <p class="producto-stock">
+                            {% if producto.stock > 0 %}
+                                <i class="fa-solid fa-check-circle" style="color: #07b407;"></i> Stock disponible: {{ producto.stock }}
+                            {% else %}
+                                <i class="fa-solid fa-times-circle" style="color: #cc3b3b;"></i> Sin stock
+                            {% endif %}
+                        </p>
+                        <form method="POST" action="{{ url_for('carrito_actualizar_item') }}">
+                            <input type="hidden" name="producto_id" value="{{ producto.id }}">
+                            <input type="hidden" name="cantidad" value="1">
+                            <button type="submit" class="btn-agregar-carrito" {% if producto.stock == 0 %}disabled{% endif %}>
+                                <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="sin-productos">
+                <i class="fa-solid fa-box-open"></i>
+                <p>No hay productos disponibles en este momento.</p>
+                {% if session.get('tipo') == 'admin' %}
+                    <a href="{{ url_for('crear_producto') }}" class="btn primary">Crear primer producto</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </main>
 
-</main>
-
-<footer>
-    <p>© 2025 Jumbox. Todos los derechos reservados.</p>
-</footer>
+    <footer>
+        <p>© 2025 Jumbox. Todos los derechos reservados.</p>
+    </footer>
 </body>
 </html>
