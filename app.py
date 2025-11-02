@@ -23,31 +23,62 @@ def allowed_file(filename):
 # =========================
 @app.route('/')
 def home():
-    # Obtener todos los productos para mostrar en el inicio
-    with get_conn() as conn:
+    categoria_filtro = request.args.get('categoria', None)
+    
+    conn = get_conn()
+    
+    categorias = conn.execute("SELECT nombre FROM categoria ORDER BY nombre").fetchall()
+    categorias_lista = [c['nombre'] for c in categorias]
+    
+    if categoria_filtro:
         productos = conn.execute("""
             SELECT
-                id_producto AS id,
-                nombre,
-                precio,
-                stock,
-                imagen,
-                fk_categoria
-            FROM producto
-            ORDER BY id_producto DESC
+                p.id_producto AS id,
+                p.nombre,
+                p.precio,
+                p.stock,
+                p.imagen,
+                p.fk_categoria,
+                c.nombre AS categoria_nombre
+            FROM producto p
+            JOIN categoria c ON p.fk_categoria = c.id_categoria
+            WHERE c.nombre = ?
+            ORDER BY p.id_producto DESC
+        """, (categoria_filtro,)).fetchall()
+    else:
+        productos = conn.execute("""
+            SELECT
+                p.id_producto AS id,
+                p.nombre,
+                p.precio,
+                p.stock,
+                p.imagen,
+                p.fk_categoria,
+                c.nombre AS categoria_nombre
+            FROM producto p
+            JOIN categoria c ON p.fk_categoria = c.id_categoria
+            ORDER BY p.id_producto DESC
         """).fetchall()
-        
-        # Convertir las imágenes a base64 para mostrarlas en HTML
-        productos_con_imagen = []
-        for p in productos:
-            producto_dict = dict(p)
-            if producto_dict['imagen']:
-                producto_dict['imagen_base64'] = base64.b64encode(producto_dict['imagen']).decode('utf-8')
-            else:
-                producto_dict['imagen_base64'] = None
-            productos_con_imagen.append(producto_dict)
     
-    return render_template('index.html', productos=productos_con_imagen)
+    productos_con_imagen = []
+    for p in productos:
+        producto_dict = dict(p)
+        if producto_dict['imagen']:
+            producto_dict['imagen_base64'] = base64.b64encode(producto_dict['imagen']).decode('utf-8')
+        else:
+            producto_dict['imagen_base64'] = None
+        productos_con_imagen.append(producto_dict)
+    
+    conn.close()
+    
+    print(f"Total de productos: {len(productos_con_imagen)}")
+    if productos_con_imagen:
+        print(f"Primer producto: {productos_con_imagen[0]['nombre']}")
+    
+    return render_template('index.html', 
+                        productos=productos_con_imagen, 
+                        categorias=categorias_lista,
+                        categoria_actual=categoria_filtro)
 
 @app.errorhandler(404)
 def pagina_no_encontrada(e):

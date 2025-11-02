@@ -22,11 +22,14 @@
                 <i class="fa-solid fa-chevron-down"></i>
             </div>
             <ul class="menu-desplegable" aria-hidden="true">
-                <li><a href="#">Almacén</a></li>
-                <li><a href="#">Bebidas</a></li>
-                <li><a href="#">Limpieza</a></li>
-                <li><a href="#">Alimentos</a></li>
-                <li><a href="#">Congelados</a></li>
+                <li {% if not categoria_actual %}class="categoria-activa"{% endif %}>
+                    <a href="{{ url_for('home') }}">Todos</a>
+                </li>
+                {% for categoria in categorias or [] %}
+                <li {% if categoria_actual == categoria %}class="categoria-activa"{% endif %}>
+                    <a href="{{ url_for('home', categoria=categoria) }}">{{ categoria }}</a>
+                </li>
+                {% endfor %}
             </ul>
         </div>
 
@@ -47,7 +50,6 @@
                     <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
                 {% else %}
                     <!-- Opciones para usuarios comunes -->
-                    <li><a href="{{ url_for('home') }}">Perfil</a></li>
                     <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
                 {% endif %}
                 {% else %}
@@ -75,7 +77,11 @@
 
     <main>
         <div class="productos-container">
-            <h2>Productos</h2>
+            {% if categoria_actual %}
+                <h2>{{ categoria_actual }}</h2>
+            {% else %}
+                <h2>Todos los Productos</h2>
+            {% endif %}
             
             {% if productos %}
             <div class="productos-grid">
@@ -94,18 +100,20 @@
                     <div class="producto-info">
                         <h3>{{ producto.nombre }}</h3>
                         <p class="producto-precio">${{ "%.2f"|format(producto.precio) }}</p>
-                        <p class="producto-stock">
-                            {% if producto.stock > 0 %}
-                                <i class="fa-solid fa-check-circle" style="color: #07b407;"></i> Stock disponible: {{ producto.stock }}
-                            {% else %}
-                                <i class="fa-solid fa-times-circle" style="color: #cc3b3b;"></i> Sin stock
-                            {% endif %}
-                        </p>
-                        <form method="POST" action="{{ url_for('carrito_actualizar_item') }}">
+                        <form method="POST" action="{{ url_for('carrito_actualizar_item') }}" class="form-agregar-carrito">
                             <input type="hidden" name="producto_id" value="{{ producto.id }}">
-                            <input type="hidden" name="cantidad" value="1">
+                            <div class="cantidad-container">
+                                <label for="cantidad-{{ producto.id }}">Cantidad:</label>
+                                <input type="number" 
+                                    id="cantidad-{{ producto.id }}" 
+                                    name="cantidad" 
+                                    value="1" 
+                                    min="1" 
+                                    max="{{ producto.stock }}" 
+                                    {% if producto.stock == 0 %}disabled{% endif %}>
+                            </div>
                             <button type="submit" class="btn-agregar-carrito" {% if producto.stock == 0 %}disabled{% endif %}>
-                                <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
+                                <i class="fa-solid fa-cart-plus"></i> Agregar
                             </button>
                         </form>
                     </div>

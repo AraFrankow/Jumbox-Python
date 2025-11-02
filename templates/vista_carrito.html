@@ -17,19 +17,22 @@
     </div>
 
     <div class="categorias" tabindex="0">
-        <div class="cat-btn">
-            <i class="fa-solid fa-bars"></i>
-            <span>CATEGORÍAS</span>
-            <i class="fa-solid fa-chevron-down"></i>
-        </div>
-        <ul class="menu-desplegable" aria-hidden="true">
-            <li><a href="#">Almacén</a></li>
-            <li><a href="#">Bebidas</a></li>
-            <li><a href="#">Limpieza</a></li>
-            <li><a href="#">Alimentos</a></li>
-            <li><a href="#">Congelados</a></li>
-        </ul>
-    </div>
+      <div class="cat-btn">
+          <i class="fa-solid fa-bars"></i>
+          <span>CATEGORÍAS</span>
+          <i class="fa-solid fa-chevron-down"></i>
+      </div>
+      <ul class="menu-desplegable" aria-hidden="true">
+          <li {% if not categoria_actual %}class="categoria-activa"{% endif %}>
+              <a href="{{ url_for('home') }}">Todos</a>
+          </li>
+          {% for categoria in categorias or [] %}
+          <li {% if categoria_actual == categoria %}class="categoria-activa"{% endif %}>
+              <a href="{{ url_for('home', categoria=categoria) }}">{{ categoria }}</a>
+          </li>
+          {% endfor %}
+      </ul>
+  </div>
 
 
     <div class="busqueda">
@@ -49,7 +52,6 @@
                 <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
             {% else %}
                 <!-- Opciones para usuarios comunes -->
-                <li><a href="{{ url_for('home') }}">Perfil</a></li>
                 <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
             {% endif %}
             {% else %}
