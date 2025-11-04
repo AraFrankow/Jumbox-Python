@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Producto</title>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <title>Administración</title>
@@ -16,7 +24,7 @@
         </div>
     
         <div class="titulo-header">
-            <h1>Administración</h1>
+            <h1>Editar Producto</h1>
         </div>
     
         <div class="cuenta" tabindex="0">
@@ -31,17 +39,37 @@
             </ul>
         </div>
     </header>
-
-    <main>
-        <ul class="opciones-admin">
-            <li><a href="{{ url_for('crear_producto') }}">Crear Productos</a></li>
-            <li><a href="{{ url_for('listar_productos_para_editar') }}">Editar Productos</a></li>
-            <li><a href="{{ url_for('admin') }}">Solicitudes</a></li>
-        </ul>
-    </main>
-
-    <footer>
+<main>
+    <h1>Editar Productos</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in productos %}
+                <tr>
+                    <td>{{ p.id_producto }}</td>
+                    <td>{{ p.nombre }}</td>
+                    <td>{{ p.precio }}</td>
+                    <td>{{ p.stock }}</td>
+                    <td>
+                        <a href="{{ url_for('editar_producto', id_producto=p.id_producto) }}">Editar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</main>
+<footer>
         <p>© 2025 Jumbox. Todos los derechos reservados.</p>
     </footer>
+</body>
+</html>
 </body>
 </html>
