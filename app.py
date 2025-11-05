@@ -484,5 +484,91 @@ def crear_producto():
     return render_template('crear_producto.html', categorias=categorias)
 
 
+@app.route('/editar-productos')
+def listar_productos_para_editar():
+    with get_conn() as conn:
+        productos = conn.execute("SELECT id_producto, nombre, precio, stock FROM producto").fetchall()
+    return render_template('listar_productos.html', productos=productos)
+
+
+@app.route('/editar-producto/<int:id_producto>', methods=['GET', 'POST'])
+def editar_producto(id_producto):
+    resp = require_login_redirect()
+    if resp:
+        return resp
+    
+    with get_conn() as conn:
+        # Obtener categorías (para el select)
+        categorias = listar_categorias(conn)
+
+        # Obtener los datos del producto seleccionado
+        producto = conn.execute("""
+            SELECT p.id_producto, p.nombre, p.precio, p.stock, c.nombre AS categoria
+            FROM producto p
+            JOIN categoria c ON p.fk_categoria = c.id_categoria
+            WHERE p.id_producto = ?
+        """, (id_producto,)).fetchone()
+
+        if not producto:
+            flash('Producto no encontrado', 'error')
+            return redirect(url_for('home'))
+    
+    # --- POST: actualizar el producto ---
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        precio = request.form.get('precio')
+        stock = request.form.get('stock')
+        categoria = request.form.get('categoria')
+        
+        if not nombre or not precio or not stock or not categoria:
+            flash('Todos los campos son obligatorios', 'error')
+            return redirect(url_for('editar_producto', id_producto=id_producto))
+        
+        try:
+            precio = float(precio)
+            stock = int(stock)
+        except ValueError:
+            flash('Precio y stock deben ser números válidos', 'error')
+            return redirect(url_for('editar_producto', id_producto=id_producto))
+        
+        imagen_data = None
+        if 'imagen' in request.files:
+            file = request.files['imagen']
+            if file and file.filename != '':
+                if allowed_file(file.filename):
+                    imagen_data = file.read()
+                else:
+                    flash('Formato de imagen no permitido', 'error')
+                    return redirect(url_for('editar_producto', id_producto=id_producto))
+        
+        with get_conn() as conn:
+            cat_row = conn.execute("SELECT id_categoria FROM categoria WHERE nombre = ?", (categoria,)).fetchone()
+            if not cat_row:
+                flash('Categoría no válida', 'error')
+                return redirect(url_for('editar_producto', id_producto=id_producto))
+            
+            fk_categoria = cat_row['id_categoria']
+
+            if imagen_data:
+                conn.execute("""
+                    UPDATE producto
+                    SET nombre = ?, precio = ?, stock = ?, fk_categoria = ?, imagen = ?
+                    WHERE id_producto = ?
+                """, (nombre, precio, stock, fk_categoria, imagen_data, id_producto))
+            else:
+                conn.execute("""
+                    UPDATE producto
+                    SET nombre = ?, precio = ?, stock = ?, fk_categoria = ?
+                    WHERE id_producto = ?
+                """, (nombre, precio, stock, fk_categoria, id_producto))
+            
+            conn.commit()
+        
+        flash('Producto actualizado correctamente', 'success')
+        return redirect(url_for('home'))
+
+    # --- GET: mostrar el formulario con los datos cargados ---
+    return render_template('editar_producto.html', categorias=categorias, producto=producto)
+
 if __name__ == '__main__':
     app.run(debug=True)
