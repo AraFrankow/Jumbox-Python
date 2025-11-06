@@ -567,7 +567,7 @@ def editar_producto(id_producto):
         flash('Producto actualizado correctamente', 'success')
         return redirect(url_for('home'))
 
-    # --- GET: mostrar el formulario con los datos cargados ---
+    # --- GET: mostrar el formulario con los datos cargados io---
     return render_template('editar_producto.html', categorias=categorias, producto=producto)
 
 if __name__ == '__main__':
