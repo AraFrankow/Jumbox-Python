@@ -570,5 +570,23 @@ def editar_producto(id_producto):
     # --- GET: mostrar el formulario con los datos cargados ---
     return render_template('editar_producto.html', categorias=categorias, producto=producto)
 
+@app.route('/eliminar-producto/<int:id_producto>', methods=['POST'])
+def eliminar_producto(id_producto):
+    resp = require_login_redirect()
+    if resp:
+        return resp
+
+    with get_conn() as conn:
+        producto = conn.execute("SELECT id_producto FROM producto WHERE id_producto = ?", (id_producto,)).fetchone()
+        if not producto:
+            flash('Producto no encontrado', 'error')
+            return redirect(url_for('listar_productos_para_editar'))
+        
+        conn.execute("DELETE FROM producto WHERE id_producto = ?", (id_producto,))
+        conn.commit()
+    
+    flash('Producto eliminado correctamente', 'success')
+    return redirect(url_for('listar_productos_para_editar'))
+
 if __name__ == '__main__':
     app.run(debug=True)

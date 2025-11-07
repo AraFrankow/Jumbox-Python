@@ -62,7 +62,9 @@
                         <td>{{ p.stock }}</td>
                         <td>
                             <a class="boton-editar" href="{{ url_for('editar_producto', id_producto=p.id_producto) }}">Editar</a>
-                            <a class="boton-borrar" href="">Borrar</a>
+                            <form action="{{ url_for('eliminar_producto', id_producto=p['id_producto']) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="boton-borrar">Borrar</button>
+                            </form>
                         </td>
                     </tr>
                 {% endfor %}
