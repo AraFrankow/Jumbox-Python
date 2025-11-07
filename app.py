@@ -214,6 +214,137 @@ def listar_categorias(conn):
         return [r['nombre'] for r in conn.execute("SELECT nombre FROM categoria ORDER BY nombre").fetchall()]
     except sqlite3.Error:
         return []
+    
+def get_stock_actual(conn, sucursal_id: int, producto_id: int) -> int:
+    """Devuelve stock actual de un producto en una sucursal (almacen_sucursal)."""
+    row = conn.execute("""
+        SELECT COALESCE(a.cantidad, 0) AS cant
+        FROM producto p
+        LEFT JOIN almacen_sucursal a
+              ON a.fk_producto = p.id_producto
+             AND a.fk_sucursal = ?
+        WHERE p.id_producto = ?
+    """, (sucursal_id, producto_id)).fetchone()
+    return row['cant'] if row else 0
+
+def listar_solicitudes_sucursal(conn, sucursal_id: int):
+    """
+    Devuelve las solicitudes de reposición de una sucursal con su detalle (1 fila por producto).
+    pedido_reposicion (cabecera) + detalle_pedido_reposicion (detalle) + producto (nombre)
+    """
+    return conn.execute("""
+        SELECT
+            pr.id_pedido_reposicion AS id,
+            pr.fecha                 AS fecha,
+            p.nombre                 AS producto,
+            dpr.cantidad             AS cantidad
+        FROM pedido_reposicion pr
+        JOIN detalle_pedido_reposicion dpr
+          ON dpr.fk_pedido_reposicion = pr.id_pedido_reposicion
+        JOIN producto p
+          ON p.id_producto = dpr.fk_producto
+        WHERE pr.fk_sucursal = ?
+        ORDER BY pr.id_pedido_reposicion DESC, dpr.id_detalle_pedido_reposicion DESC
+    """, (sucursal_id,)).fetchall()
+
+
+# =========================
+# Sucursal
+# =========================
+
+@app.get('/sucursal')
+def vista_sucursal():
+    """Formulario 'Pedir Stock' y lista de solicitudes de la sucursal (sin JS)."""
+    resp = require_login_redirect()
+    if resp:
+        return resp
+
+    with get_conn() as conn:
+        # Sucursal actual en sesión; si no hay, usamos la primera disponible
+        sucursales = listar_sucursales(conn)
+        if not sucursales:
+            flash("No hay sucursales cargadas.", "error")
+            return redirect(url_for('home'))
+
+        if 'sucursal_id' not in session:
+            session['sucursal_id'] = sucursales[0]['id']
+        sucursal_id = session['sucursal_id']
+
+        # Productos para el select
+        productos = conn.execute("""
+            SELECT id_producto, nombre
+            FROM producto
+            ORDER BY nombre
+        """).fetchall()
+
+        # Stock actual (si viene ?producto_id=... en la query)
+        selected_producto_id = request.args.get('producto_id', type=int)
+        stock_actual = None
+        if selected_producto_id:
+            stock_actual = get_stock_actual(conn, sucursal_id, selected_producto_id)
+
+        # Solicitudes (cabecera+detalle) según tu schema
+        solicitudes = listar_solicitudes_sucursal(conn, sucursal_id)
+
+    return render_template(
+        'sucursal.html',
+        productos=productos,
+        sucursal_id=sucursal_id,
+        selected_producto_id=selected_producto_id,
+        stock_actual=stock_actual,
+        solicitudes=solicitudes  # si más adelante querés mostrarlas abajo
+    )
+
+
+@app.post('/sucursal/pedir-stock')
+def sucursal_pedir_stock():
+    """
+    Inserta cabecera en pedido_reposicion (fecha, sucursal) y su detalle en detalle_pedido_reposicion.
+    """
+    resp = require_login_redirect()
+    if resp:
+        return resp
+
+    producto_id = request.form.get('producto_id', type=int)
+    cantidad    = request.form.get('cantidad', type=int)
+
+    if not producto_id or not cantidad or cantidad <= 0:
+        flash("Elegí un producto y una cantidad válida.", "error")
+        return redirect(url_for('vista_sucursal', producto_id=producto_id or ""))
+
+    with get_conn() as conn:
+        # Sucursal actual (o primera de fallback)
+        sucursal_id = session.get('sucursal_id')
+        if not sucursal_id:
+            s = conn.execute("SELECT id_sucursal FROM sucursal ORDER BY id_sucursal LIMIT 1").fetchone()
+            if not s:
+                flash("No hay sucursales cargadas.", "error")
+                return redirect(url_for('home'))
+            sucursal_id = s['id_sucursal']
+            session['sucursal_id'] = sucursal_id
+
+        try:
+            # 1) Cabecera
+            cur = conn.execute("""
+                INSERT INTO pedido_reposicion (fecha, fk_sucursal)
+                VALUES (DATE('now'), ?)
+            """, (sucursal_id,))
+            id_pedido_rep = cur.lastrowid
+
+            # 2) Detalle
+            conn.execute("""
+                INSERT INTO detalle_pedido_reposicion (cantidad, fk_pedido_reposicion, fk_producto)
+                VALUES (?, ?, ?)
+            """, (cantidad, id_pedido_rep, producto_id))
+
+            conn.commit()
+            flash("Solicitud de reposición creada.", "success")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error al pedir stock: {e}", "error")
+
+    # Volvemos a la vista con el producto seleccionado para que puedas ver su stock si querés
+    return redirect(url_for('vista_sucursal', producto_id=producto_id))
 
 
 # =========================
