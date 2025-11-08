@@ -48,15 +48,22 @@
                     <!-- Opciones exclusivas del admin -->
                     <li><a href="{{ url_for('admin') }}">Admin</a></li>
                     <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            
+                {% elif session.get('tipo') == 'sucursal' %}
+                    <!-- Opciones para usuarios de tipo sucursal -->
+                    <li><a href="{{ url_for('panel_sucursal') }}">Panel Sucursal</a></li>
+                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            
                 {% else %}
                     <!-- Opciones para usuarios comunes -->
                     <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
                 {% endif %}
-                {% else %}
-                    <!-- Opciones para visitantes -->
-                    <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
-                    <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
-                {% endif %}
+            
+            {% else %}
+                <!-- Opciones para visitantes -->
+                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+            {% endif %}
             </ul>
         </div>
 
