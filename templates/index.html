@@ -107,6 +107,13 @@
                     <div class="producto-info">
                         <h3>{{ producto.nombre }}</h3>
                         <p class="producto-precio">${{ "%.2f"|format(producto.precio) }}</p>
+                        <p class="producto-stock">
+                            {% if producto.stock > 0 %}
+                                <i class="fa-solid fa-check-circle" style="color: #07b407;"></i> Stock disponible: {{ producto.stock }}
+                            {% else %}
+                                <i class="fa-solid fa-times-circle" style="color: #cc3b3b;"></i> Sin stock
+                            {% endif %}
+                        </p>
                         <form method="POST" action="{{ url_for('carrito_actualizar_item') }}" class="form-agregar-carrito">
                             <input type="hidden" name="producto_id" value="{{ producto.id }}">
                             <div class="cantidad-container">
