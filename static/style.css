@@ -781,7 +781,10 @@ td{
     background-color: #a71d2a;
 }
 
+/* ===== VISTA PEDIR STOCK (wireframe simple) ===== */
+.sucursal-page{background:#fff;color:#111;font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
 
+<<<<<<< HEAD
 /* =====================================
    SELECTOR DE SUCURSAL (debajo del header)
 ===================================== */
@@ -1260,3 +1263,51 @@ SOLICITUDES - ADMIN
         width: 100%;
     }
 }
+=======
+/* Header */
+.suc-header{
+  position:relative; display:grid; grid-template-columns:120px 1fr 120px; align-items:center;
+  padding:18px 24px; border-bottom:2px solid #111;
+}
+.suc-header__title{margin:0; text-align:center; font-size:28px; font-weight:700}
+.suc-header__left{justify-self:start}
+.suc-header__right{justify-self:end}
+.suc-logo{
+  width:80px; height:50px; display:inline-block; background:#ddd; border:2px solid #111;
+  box-shadow:2px 2px 0 #999; /* simula el rectángulo del wireframe */
+}
+.suc-account{
+  display:inline-block; padding:8px 12px; border:2px solid #111; border-radius:8px; background:#fff;
+  box-shadow:2px 2px 0 #999; font-weight:600;
+}
+
+/* Contenido */
+.suc-main{max-width:980px; margin:40px auto; padding:0 20px}
+
+/* Panel centrado */
+.suc-panel{
+  max-width:560px; margin:0 auto; padding:36px 28px; border:2px solid #111; background:#fff;
+}
+.suc-panel__title{
+  text-align:center; margin:-16px 0 20px; font-weight:600; color:#666;
+}
+
+/* Formulario */
+.suc-form{display:flex; flex-direction:column; gap:12px}
+.suc-label{font-weight:700; margin-top:4px}
+.suc-select, .suc-input{
+  padding:10px 12px; border:2px solid #111; border-radius:8px; background:#fff; font-size:15px;
+  box-shadow:2px 2px 0 #999;
+}
+.suc-stock-actual{display:flex; gap:8px; align-items:center}
+.suc-stock-actual__label{color:#444}
+.suc-stock-actual__value{
+  min-width:48px; padding:6px 10px; border:2px dashed #111; border-radius:8px; background:#fff;
+}
+
+.suc-btn{
+  width:220px; margin:20px auto 0; padding:12px 0; font-weight:700; background:#fff; color:#111;
+  border:2px solid #111; border-radius:10px; box-shadow:2px 2px 0 #999; cursor:pointer;
+}
+.suc-btn:active{transform:translateY(1px)}
+>>>>>>> 91421f835a6e22ee5cfaa57205abbbb59b583ef5
