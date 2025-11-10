@@ -130,7 +130,5 @@ CREATE TABLE IF NOT EXISTS almacen_sucursal (
 )
 ''')
 
-
 conn.commit()
 conn.close()
-
