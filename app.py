@@ -2,6 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import sqlite3
 import base64
 from flask_bcrypt import Bcrypt
+from dotenv import load_dotenv
+import os
+
+# Cargar las variables desde .env
+load_dotenv()
 
 # telefono admin: 12345678
 # contraseña admin: Admin1234
