@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
     <title>Administración</title>
 </head>
 <body>
@@ -36,7 +37,7 @@
         <ul class="opciones-admin">
             <li><a href="{{ url_for('crear_producto') }}">Crear Productos</a></li>
             <li><a href="{{ url_for('listar_productos_para_editar') }}">Editar Productos</a></li>
-            <li><a href="{{ url_for('admin') }}">Solicitudes</a></li>
+            <li><a href="{{ url_for('admin_solicitudes') }}">Solicitudes</a></li>
         </ul>
     </main>
 

@@ -28,3 +28,8 @@ Thumbs.db
 # --- ARCHIVOS DE PRUEBA ---
 *.zip
 *.rar
+=======
+.env
+__pychache__/
+*.pyc
+.vscode/

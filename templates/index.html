@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
     <title>Jumbox</title>
 </head>
 <body>
@@ -48,15 +49,22 @@
                     <!-- Opciones exclusivas del admin -->
                     <li><a href="{{ url_for('admin') }}">Admin</a></li>
                     <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            
+                {% elif session.get('tipo') == 'sucursal' %}
+                    <!-- Opciones para usuarios de tipo sucursal -->
+                    <li><a href="{{ url_for('panel_sucursal') }}">Panel Sucursal</a></li>
+                    <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            
                 {% else %}
                     <!-- Opciones para usuarios comunes -->
                     <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
                 {% endif %}
-                {% else %}
-                    <!-- Opciones para visitantes -->
-                    <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
-                    <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
-                {% endif %}
+            
+            {% else %}
+                <!-- Opciones para visitantes -->
+                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
+            {% endif %}
             </ul>
         </div>
 
@@ -65,6 +73,59 @@
         </div>
     </header>
     
+<!-- Selector de Sucursal (debajo del header) -->
+<div class="selector-sucursal-container">
+    <div class="selector-sucursal-wrapper">
+        <form method="POST" action="{{ url_for('cambiar_sucursal') }}" class="selector-sucursal-form">
+            <label for="sucursal-select">
+                <i class="fa-solid fa-store"></i> Comprar en:
+            </label>
+            <select name="cliente_sucursal_id" id="sucursal-select" onchange="this.form.submit()">
+                {% for s in sucursales %}
+                    <option value="{{ s['id'] }}" {% if cliente_sucursal_id == s['id'] %}selected{% endif %}>
+                        {{ s['nombre'] }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="button" class="btn-info-sucursal" onclick="mostrarInfoSucursal()" title="Ver direcciones">
+                <i class="fa-solid fa-info-circle"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de información de sucursales -->
+<div id="modalSucursal" class="modal-sucursal">
+    <div class="modal-sucursal-content">
+        <button class="modal-close" onclick="cerrarModalSucursal()">&times;</button>
+        <h3 class="modal-title">
+            <i class="fa-solid fa-map-marker-alt"></i> Nuestras Sucursales
+        </h3>
+        <div class="sucursales-list">
+            {% for s in sucursales %}
+            <div class="sucursal-item">
+                <h4>{{ s['nombre'] }}</h4>
+                <p>
+                    <i class="fa-solid fa-location-dot"></i> 
+                    {{ s['direccion'] or 'Dirección no disponible' }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function mostrarInfoSucursal() {
+    document.getElementById('modalSucursal').classList.add('show');
+}
+
+function cerrarModalSucursal() {
+    document.getElementById('modalSucursal').classList.remove('show');
+}
+</script>
+
+
     <div class="mensajes-flash">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -100,6 +161,13 @@
                     <div class="producto-info">
                         <h3>{{ producto.nombre }}</h3>
                         <p class="producto-precio">${{ "%.2f"|format(producto.precio) }}</p>
+                        <p class="producto-stock">
+                            {% if producto.stock > 0 %}
+                                <i class="fa-solid fa-check-circle" style="color: #07b407;"></i> Stock disponible: {{ producto.stock }}
+                            {% else %}
+                                <i class="fa-solid fa-times-circle" style="color: #cc3b3b;"></i> Sin stock
+                            {% endif %}
+                        </p>
                         <form method="POST" action="{{ url_for('carrito_actualizar_item') }}" class="form-agregar-carrito">
                             <input type="hidden" name="producto_id" value="{{ producto.id }}">
                             <div class="cantidad-container">
