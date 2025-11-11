@@ -542,6 +542,39 @@ h2 {
     font-weight: bold;
     margin-bottom: 10px;
 }
+.formulario-container button,
+.formulario-container .btn-google {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.formulario-container .btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    color: #444;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    padding: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.formulario-container .btn-google:hover {
+    background-color: #f8f8f8;
+    border-color: #bbb;
+}
+
+.google-logo {
+    width: 22px;
+    height: 22px;
+    margin-right: 10px;
+}
 
 /* ===========================
 Complemento vistas Productos/Carrito
@@ -1259,4 +1292,69 @@ SOLICITUDES - ADMIN
     .btn-enviar {
         width: 100%;
     }
+}
+
+/*======== Numero de telefono =========*/
+#body_tel{
+    font-family: Arial, sans-serif;
+    background-color: #07b407d2;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+#titulo_tel{
+    color: white;
+    margin-bottom: 25px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+#form_tel{
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 320px;
+}
+#label_tel{
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+#telefono{
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    outline: none;
+}
+#telefono:focus{
+    border-color: #07b407;
+    box-shadow: 0 0 5px #07b40766;
+}
+#boton_tel{
+    width: 100%;
+    padding: 12px;
+    background-color: #07b407;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+}
+#boton_tel:hover {
+    background-color: #06a306;
+}
+.mensaje{
+    margin-top: 15px;
+    font-size: 14px;
+    color: red;
 }
