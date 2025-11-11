@@ -40,7 +40,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 # CONFIGURACIÓN DE LA APP
 # ===============================================
 load_dotenv()
-app = Flask(__name__)
+app = Flask(_name_)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 bcrypt = Bcrypt(app)
 DB_NAME = "jumbox.db"
@@ -1156,6 +1156,6 @@ def inicializar_base_datos():
 # ===============================================
 # MAIN
 # ===============================================
-if __name__ == '__main__':
+if _name_ == '_main_':
     inicializar_base_datos()
     app.run(debug=True)
