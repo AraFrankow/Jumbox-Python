@@ -5,31 +5,17 @@ ENV/
 # --- VARIABLES DE ENTORNO ---
 .env
 
-# --- ARCHIVOS TEMPORALES DE PYTHON ---
+# --- TEMPORALES PYTHON ---
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# --- CONFIGURACIONES DE EDITOR / IDE ---
+# --- EDITOR / IDE ---
 .vscode/
 .idea/
 
-# --- ARCHIVOS DE BASE DE DATOS O BACKUPS ---
+# --- BD y BACKUPS ---
 *.db
 *.sqlite3
 *.bak
-
-# --- ARCHIVOS DE DEPLOY ---
-*.log
-.DS_Store
-Thumbs.db
-
-# --- ARCHIVOS DE PRUEBA ---
-*.zip
-*.rar
-=======
-.env
-__pychache__/
-*.pyc
-.vscode/
