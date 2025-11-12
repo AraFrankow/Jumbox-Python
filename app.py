@@ -867,7 +867,7 @@ def admin_aprobar_solicitud(solicitud_id):
             """, (solicitud_id,))
             
             conn.commit()
-            flash("Solicitud aprobada y stock transferido.", "success")
+            flash("Productos enviados correctamente", "success")
             
         except Exception as e:
             conn.rollback()
@@ -1111,23 +1111,6 @@ def editar_producto(id_producto):
 # ===============================================
 # PRODUCTOS (VISTA GENERAL)
 # ===============================================
-@app.get('/productos')
-def productos():
-    with get_conn() as conn:
-        categorias = listar_categorias(conn)
-        productos = conn.execute("""
-            SELECT
-                id_producto AS id,
-                nombre,
-                precio,
-                stock,
-                NULL  AS categoria,
-                0     AS stock_minimo,
-                1     AS activo
-            FROM producto
-            ORDER BY id_producto
-        """).fetchall()
-    return render_template('vista_productos.html', productos=productos, categorias=categorias)
 
 @app.post('/productos/editar')
 def productos_editar():

@@ -59,6 +59,7 @@
       
           {% else %}
               <!-- Opciones para usuarios comunes -->
+              <li><a href="{{ url_for('logout') }}">Mis Compras</a></li>
               <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
           {% endif %}
       
@@ -74,6 +75,18 @@
         <a href="#"><i class="fa-solid fa-cart-shopping"></i>MI CARRITO</a>
     </div>
 </header>
+
+
+<div class="mensajes-flash">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+          {% for category, message in messages %}
+              <div class="alert {{ category }}">{{ message }}</div>
+          {% endfor %}
+      {% endif %}
+  {% endwith %}
+</div>
+
 
 <main class="contenedor">
   <h2>Carrito</h2>
