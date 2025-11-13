@@ -2,3 +2,6 @@ flask
 scikit-learn
 joblib
 flask-cors
+flask_bcrypt
+google-auth-oauthlib
+dotenv
