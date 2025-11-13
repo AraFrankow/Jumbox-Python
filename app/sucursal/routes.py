@@ -1,32 +1,28 @@
-from flask import Blueprint
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from datetime import date
+from app.utils import (get_conn, require_login_redirect, get_productos_sucursal)
 
+sucursal_bp = Blueprint('sucursal', __name__)
 
-main = Blueprint("main", __name__)
-
-
-# ===============================================
-# PANEL SUCURSAL
-# ===============================================
-@main.get('/panel-sucursal')
+@sucursal_bp.get('/panel-sucursal')
 def panel_sucursal():
     resp = require_login_redirect()
     if resp:
         return resp
     if session.get('tipo') != 'sucursal':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     return render_template('panel_sucursal.html')
 
-@main.route('/sucursal/almacen')
+@sucursal_bp.route('/sucursal/almacen')
 def sucursal_almacen():
-    """Ver el almacén de la sucursal con stock de productos."""
     resp = require_login_redirect()
     if resp:
         return resp
     
     if session.get('tipo') != 'sucursal':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     
     cliente_sucursal_id = session.get('id_cliente')
     
@@ -43,16 +39,15 @@ def sucursal_almacen():
                          sucursal=sucursal, 
                          productos=productos)
 
-@main.route('/sucursal/pedir-stock', methods=['GET', 'POST'])
+@sucursal_bp.route('/sucursal/pedir-stock', methods=['GET', 'POST'])
 def sucursal_pedir_stock():
-    """Formulario para pedir reposición de stock."""
     resp = require_login_redirect()
     if resp:
         return resp
     
     if session.get('tipo') != 'sucursal':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     
     cliente_sucursal_id = session.get('id_cliente')
     
@@ -62,7 +57,7 @@ def sucursal_pedir_stock():
         
         if not producto_id or not cantidad or cantidad < 1:
             flash("Datos inválidos.", "error")
-            return redirect(url_for('sucursal_pedir_stock'))
+            return redirect(url_for('sucursal.sucursal_pedir_stock'))
         
         with get_conn() as conn:
             try:
@@ -81,22 +76,19 @@ def sucursal_pedir_stock():
                 
                 conn.commit()
                 flash("Solicitud de stock enviada correctamente.", "success")
-                return redirect(url_for('sucursal_pedir_stock'))
+                return redirect(url_for('sucursal.sucursal_pedir_stock'))
                 
             except Exception as e:
                 conn.rollback()
                 flash(f"Error al crear solicitud: {e}", "error")
     
-    # GET - Obtener datos para el formulario
     with get_conn() as conn:
-        # Obtener nombre de la sucursal
         sucursal = conn.execute("""
             SELECT nombre FROM cliente WHERE id_cliente = ?
         """, (cliente_sucursal_id,)).fetchone()
         
         sucursal_nombre = sucursal['nombre'] if sucursal else "Sucursal"
         
-        # Obtener productos con su stock actual en esta sucursal
         productos = conn.execute("""
             SELECT 
                 p.id_producto,
@@ -113,15 +105,14 @@ def sucursal_pedir_stock():
                         productos=productos,
                         sucursal_nombre=sucursal_nombre)
 
-@main.get('/sucursal/pedidos-clientes')
+@sucursal_bp.get('/sucursal/pedidos-clientes')
 def sucursal_pedidos_clientes():
-    """Muestra los pedidos realizados por clientes."""
     resp = require_login_redirect()
     if resp:
         return resp
     if session.get('tipo') != 'sucursal':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
 
     cliente_sucursal_id = session.get('id_cliente')
 
@@ -144,15 +135,14 @@ def sucursal_pedidos_clientes():
 
     return render_template('sucursal_pedidos_clientes.html', pedidos=pedidos)
 
-@main.post('/sucursal/pedidos-clientes/enviar/<int:id_pedido>')
+@sucursal_bp.post('/sucursal/pedidos-clientes/enviar/<int:id_pedido>')
 def sucursal_enviar_pedido(id_pedido):
-    """Marca el pedido como enviado."""
     resp = require_login_redirect()
     if resp:
         return resp
     if session.get('tipo') != 'sucursal':
         flash("No autorizado.", "error")
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
 
     with get_conn() as conn:
         try:
@@ -169,4 +159,4 @@ def sucursal_enviar_pedido(id_pedido):
             conn.rollback()
             flash(f"Error al actualizar el pedido: {e}", "error")
 
-    return redirect(url_for('sucursal_pedidos_clientes'))
+    return redirect(url_for('sucursal.sucursal_pedidos_clientes'))

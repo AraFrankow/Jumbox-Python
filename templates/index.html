@@ -11,7 +11,7 @@
 <body>
     <header class="main-header">
         <div class="logo">
-            <a href="{{ url_for('home') }}">
+            <a href="{{ url_for('main.home') }}">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
             </a>
         </div>
@@ -24,7 +24,7 @@
             </div>
             <ul class="menu-desplegable" aria-hidden="true">
                 <li {% if not categoria_actual %}class="categoria-activa"{% endif %}>
-                    <a href="{{ url_for('home') }}">Todos</a>
+                    <a href="{{ url_for('main.home') }}">Todos</a>
                 </li>
                 {% for categoria in categorias or [] %}
                 <li {% if categoria_actual == categoria %}class="categoria-activa"{% endif %}>
@@ -63,7 +63,7 @@
             
             {% else %}
                 <!-- Opciones para visitantes -->
-                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+                <li><a href="{{ url_for('auth.registro') }}">Registrarse</a></li>
                 <li><a href="{{ url_for('login') }}">Iniciar sesión</a></li>
             {% endif %}
             </ul>
@@ -77,7 +77,7 @@
 <!-- Selector de Sucursal (debajo del header) -->
 <div class="selector-sucursal-container">
     <div class="selector-sucursal-wrapper">
-        <form method="POST" action="{{ url_for('cambiar_sucursal') }}" class="selector-sucursal-form">
+        <form method="POST" action="{{ url_for('main.cambiar_sucursal') }}" class="selector-sucursal-form">
             <label for="sucursal-select">
                 <i class="fa-solid fa-store"></i> Comprar en:
             </label>

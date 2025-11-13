@@ -1,7 +1,6 @@
-flask
-scikit-learn
-joblib
-flask-cors
-flask_bcrypt
+Flask
+flask-bcrypt
+google-auth
 google-auth-oauthlib
-dotenv
+google-auth-httplib2
+python-dotenv

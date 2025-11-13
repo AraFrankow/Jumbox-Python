@@ -11,7 +11,7 @@
 <body>
     <header class="main-header">
         <div class="logo">
-            <a href="{{ url_for('home') }}">
+            <a href="{{ url_for('main.home') }}">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Jumbox">
             </a>
         </div>
@@ -177,7 +177,7 @@
                     <div class="sin-compras">
                         <i class="fa-solid fa-shopping-cart"></i>
                         <p>Aún no has realizado ninguna compra</p>
-                        <a href="{{ url_for('home') }}" class="btn primary">
+                        <a href="{{ url_for('main.home') }}" class="btn primary">
                             <i class="fa-solid fa-shopping-bag"></i> Ir a Comprar
                         </a>
                     </div>
@@ -186,7 +186,7 @@
 
             <!-- Botón Volver -->
             <div class="acciones-footer">
-                <a href="{{ url_for('home') }}" class="btn-volver">
+                <a href="{{ url_for('main.home') }}" class="btn-volver">
                     <i class="fa-solid fa-arrow-left"></i> Volver a la Tienda
                 </a>
             </div>
