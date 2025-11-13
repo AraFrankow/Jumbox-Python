@@ -14,7 +14,6 @@ from datetime import date
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-from dotenv import load_dotenv
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
