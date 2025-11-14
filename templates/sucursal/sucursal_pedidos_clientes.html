@@ -24,8 +24,8 @@
                 <i class="fa-solid fa-chevron-down"></i>
             </div>
             <ul class="menu-cuenta" aria-hidden="true">
-                <li><a href="{{ url_for('panel_sucursal') }}">Panel Sucursal</a></li>
-                <li><a href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+                <li><a href="{{ url_for('sucursal.panel_sucursal') }}">Panel Sucursal</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
             </ul>
         </div>
     </header>
@@ -84,7 +84,7 @@
                                 </td>
                                 <td class="center">
                                     {% if not p['estado'] or p['estado'] != 'enviado' %}
-                                    <form action="{{ url_for('sucursal_enviar_pedido', id_pedido=p['id_pedido']) }}" method="post" style="display: inline;">
+                                    <form action="{{ url_for('sucursal.sucursal_enviar_pedido', id_pedido=p['id_pedido']) }}" method="post" style="display: inline;">
                                         <button type="submit" class="btn-enviar-pedido">
                                             <i class="fa-solid fa-truck"></i> Enviar
                                         </button>
@@ -108,7 +108,7 @@
                 {% endif %}
 
                 <div class="acciones-footer">
-                    <a href="{{ url_for('panel_sucursal') }}" class="btn-volver">
+                    <a href="{{ url_for('sucursal.panel_sucursal') }}" class="btn-volver">
                         <i class="fa-solid fa-arrow-left"></i> Volver al Panel
                     </a>
                 </div>
