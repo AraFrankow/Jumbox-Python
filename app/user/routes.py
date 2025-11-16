@@ -3,7 +3,7 @@ from datetime import date
 from app.utils import (get_conn, require_login_redirect, ensure_carrito_abierto,
                     leer_items, listar_sucursales, listar_categorias)
 
-user_bp = Blueprint('user', __name__)
+user_bp = Blueprint('user', __name__, template_folder='../../templates/user')
 
 @user_bp.get('/carrito')
 def carrito():
@@ -13,6 +13,8 @@ def carrito():
 
     id_cliente = session['id_cliente']
     cliente = {"id_cliente": id_cliente, "nombre": session.get('nombre', 'Usuario')}
+
+    COSTO_ENVIO = 6000.0
 
     with get_conn() as conn:
         sucursales = listar_sucursales(conn)
@@ -26,16 +28,19 @@ def carrito():
         sucursal_actual = next((s for s in sucursales if s['id'] == session['cliente_sucursal_id']), sucursales[0])
 
         car = ensure_carrito_abierto(conn, id_cliente)
-        items, total = leer_items(conn, car['id_carrito'])
+        items, subtotal = leer_items(conn, car['id_carrito'])
+        total = subtotal + COSTO_ENVIO if items else 0.0
         categorias = listar_categorias(conn)
 
     return render_template(
-        'vista_carrito.html',
+        'user/vista_carrito.html',
         cliente=cliente,
         categorias=categorias,
         sucursales=sucursales,
         sucursal_actual=sucursal_actual,
         items=items,
+        subtotal=subtotal,
+        costo_envio=COSTO_ENVIO,
         total=total,
         metodos_pago=['EFECTIVO', 'TARJETA']
     )
@@ -223,8 +228,8 @@ def mis_compras():
             })
     
     return render_template('compras_cliente.html', 
-                         cliente=cliente,
-                         pedidos=pedidos_procesados)
+                        cliente=cliente,
+                        pedidos=pedidos_procesados)
 
 @user_bp.route('/actualizar-direccion', methods=['POST'])
 def actualizar_direccion():

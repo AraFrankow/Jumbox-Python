@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from datetime import date
 from app.utils import (get_conn, require_login_redirect, get_productos_sucursal)
 
-sucursal_bp = Blueprint('sucursal', __name__)
+sucursal_bp = Blueprint('sucursal', __name__, template_folder='../../templates/sucursal')
 
 @sucursal_bp.get('/panel-sucursal')
 def panel_sucursal():
@@ -36,8 +36,8 @@ def sucursal_almacen():
         productos = get_productos_sucursal(conn, cliente_sucursal_id)
     
     return render_template('sucursal_almacen.html', 
-                         sucursal=sucursal, 
-                         productos=productos)
+                        sucursal=sucursal, 
+                        productos=productos)
 
 @sucursal_bp.route('/sucursal/pedir-stock', methods=['GET', 'POST'])
 def sucursal_pedir_stock():
