@@ -59,7 +59,34 @@ def carrito_actualizar_item():
         flash("Cantidad inválida.", "error")
         return redirect(url_for('user.carrito'))
 
+    # Obtener la sucursal seleccionada
+    cliente_sucursal_id = session.get('cliente_sucursal_id')
+    
+    if not cliente_sucursal_id:
+        flash("No hay sucursal seleccionada.", "error")
+        return redirect(url_for('user.carrito'))
+
     with get_conn() as conn:
+        # Verificar stock disponible en la sucursal
+        stock_disponible = conn.execute("""
+            SELECT COALESCE(a.cantidad, 0) AS stock
+            FROM producto p
+            LEFT JOIN almacen_sucursal a 
+                ON a.fk_producto = p.id_producto 
+                AND a.fk_sucursal = ?
+            WHERE p.id_producto = ?
+        """, (cliente_sucursal_id, producto_id)).fetchone()
+        
+        if not stock_disponible:
+            flash("Producto no encontrado.", "error")
+            return redirect(url_for('user.carrito'))
+        
+        stock_actual = stock_disponible['stock']
+        
+        if cantidad > stock_actual:
+            flash(f"Stock insuficiente. Solo hay {stock_actual} unidades disponibles en esta sucursal.", "error")
+            return redirect(url_for('user.carrito'))
+
         car = ensure_carrito_abierto(conn, id_cliente)
 
         ex = conn.execute("""
@@ -80,7 +107,7 @@ def carrito_actualizar_item():
                 VALUES (?,?,?)
             """, (producto_id, car['id_carrito'], cantidad))
 
-    flash("Carrito actualizado.", "success")
+    flash("Carrito actualizado correctamente.", "success")
     return redirect(url_for('user.carrito'))
 
 @user_bp.post('/carrito/items/remove')
