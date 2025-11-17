@@ -14,7 +14,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = "https://jumboox.onrender.com/"
-REDIRECT_URI = "http://127.0.0.1:5000/auth/callback"
+
 
 flow = Flow.from_client_config(
     client_config={
