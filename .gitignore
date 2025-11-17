@@ -16,6 +16,5 @@ __pycache__/
 .idea/
 
 # --- BD y BACKUPS ---
-*.db
 *.sqlite3
 *.bak
