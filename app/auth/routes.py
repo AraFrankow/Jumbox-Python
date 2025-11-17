@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+import sqlite3
 import os
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
@@ -6,9 +7,8 @@ from google.auth.transport import requests as google_requests
 from app import bcrypt
 from app.utils import get_conn
 
-auth_bp = Blueprint('auth', __name__, template_folder='../../templates/auth')
+auth_bp = Blueprint('auth', _name_, template_folder='../../templates/auth')
 
-# En producción esto no es necesario, pero no rompe.
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
@@ -16,12 +16,14 @@ GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI_LOCAL = "http://127.0.0.1:5000/auth/callback"
 REDIRECT_URI_PROD = "https://jumboox.onrender.com/auth/callback"
 
+print("GOOGLE_CLIENT_ID =", GOOGLE_CLIENT_ID)
+print("GOOGLE_CLIENT_SECRET =", GOOGLE_CLIENT_SECRET)
 
-def create_flow(state=None):
+def create_flow():
     if request.host.startswith("127.0.0.1") or request.host.startswith("localhost"):
-        redirect_uri = REDIRECT_URI_LOCAL
+        redirect = REDIRECT_URI_LOCAL
     else:
-        redirect_uri = REDIRECT_URI_PROD
+        redirect = REDIRECT_URI_PROD
 
     return Flow.from_client_config(
         client_config={
@@ -30,17 +32,15 @@ def create_flow(state=None):
                 "client_secret": GOOGLE_CLIENT_SECRET,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [REDIRECT_URI_LOCAL, REDIRECT_URI_PROD],  # acá ya queda bien
+                "redirect_uris": [REDIRECT_URI_LOCAL, REDIRECT_URI_PROD]
             }
         },
         scopes=[
             "openid",
-            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/userinfo.profile"
         ],
-        state=state,
-        redirect_uri=redirect_uri,
+        redirect_uri=redirect
     )
-
 
 @auth_bp.route('/registro', methods=['GET', 'POST'])
 def registro():
@@ -58,7 +58,7 @@ def registro():
         hash_contra = bcrypt.generate_password_hash(contra).decode('utf-8')
 
         try:
-            conn = get_conn()
+            conn = sqlite3.connect("jumbox.db")
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo)
@@ -69,12 +69,11 @@ def registro():
 
             flash("Registro exitoso", "success")
             return redirect(url_for('auth.login'))
-        except Exception:
-            flash("El teléfono ya está registrado o ocurrió un error.", "error")
+        except sqlite3.IntegrityError:
+            flash("El telefono ya está registrado", "error")
             return redirect(url_for('auth.registro'))
 
     return render_template('registro.html')
-
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -82,7 +81,7 @@ def login():
         tel = request.form['tel']
         contra = request.form['contra']
 
-        conn = get_conn()
+        conn = sqlite3.connect("jumbox.db")
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id_cliente, nombre, contrasena, tipo
@@ -96,9 +95,9 @@ def login():
             session['id_cliente'] = cliente[0]
             session['nombre'] = cliente[1]
             session['tipo'] = cliente[3]
-
+            
             flash("Inicio de sesión exitoso", "success")
-
+            
             if cliente[3] == 'sucursal':
                 return redirect(url_for('sucursal.panel_sucursal'))
             elif cliente[3] == 'admin':
@@ -111,15 +110,9 @@ def login():
 
     return render_template('login.html')
 
-
 @auth_bp.route("/logingoogle")
 def logingoogle():
-    try:
-        flow = create_flow()
-    except RuntimeError as e:
-        # Si faltan env vars, vas a ver este mensaje en el navegador
-        return str(e), 500
-
+    flow = create_flow()
     authorization_url, state = flow.authorization_url(
         access_type="offline",
         include_granted_scopes="true",
@@ -128,81 +121,50 @@ def logingoogle():
     session["state"] = state
     return redirect(authorization_url)
 
-
 @auth_bp.route("/auth/callback")
 def callback():
-    # Recuperamos el state de sesión
-    state = session.get("state")
-    if not state:
-        flash("Sesión de Google no válida o expirada. Probá nuevamente.", "error")
-        return redirect(url_for("auth.login"))
-
-    try:
-        flow = create_flow(state=state)
-    except RuntimeError as e:
-        return str(e), 500
-
-    try:
-        flow.fetch_token(authorization_response=request.url)
-    except Exception as e:
-        print("Error al obtener el token de Google:", e)
-        flash("Ocurrió un error al autenticar con Google.", "error")
-        return redirect(url_for("auth.login"))
-
+    flow = create_flow()
+    flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
     request_session = google_requests.Request()
 
-    try:
-        id_info = id_token.verify_oauth2_token(
-            credentials.id_token,
-            request_session,
-            GOOGLE_CLIENT_ID
-        )
-    except Exception as e:
-        print("Error al verificar el ID token de Google:", e)
-        flash("No se pudo verificar la autenticación de Google.", "error")
-        return redirect(url_for("auth.login"))
+    id_info = id_token.verify_oauth2_token(
+        credentials.id_token,
+        request_session,
+        os.environ.get("GOOGLE_CLIENT_ID")
+    )
 
     phone_number = id_info.get("phone_number")
     nombre_google = id_info.get("name", "Usuario Google")
 
-    # Si Google no devuelve teléfono, pedimos que lo ingrese
     if not phone_number:
         session["google_temp_id"] = id_info.get("sub")
         session["nombre_google"] = nombre_google
         return redirect(url_for("auth.pedir_telefono"))
 
-    conn = get_conn()
+    conn = sqlite3.connect("jumbox.db")
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT id_cliente, nombre, tipo FROM cliente WHERE telefono = ?",
-        (phone_number,)
-    )
+    cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (phone_number,))
     cliente = cursor.fetchone()
 
     if not cliente:
         cursor.execute(
-            "INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo) "
-            "VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo) VALUES (?, ?, ?, ?, ?)",
             (nombre_google, "", phone_number, "", "usuario")
         )
         conn.commit()
-        cursor.execute(
-            "SELECT id_cliente, nombre, tipo FROM cliente WHERE telefono = ?",
-            (phone_number,)
-        )
+        cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (phone_number,))
         cliente = cursor.fetchone()
 
     conn.close()
 
     session["id_cliente"] = cliente[0]
     session["nombre"] = cliente[1]
-    session["tipo"] = cliente[2]
+    session["tipo"] = cliente[3]
 
     flash("Inicio de sesión exitoso", "success")
     return redirect(url_for("main.home"))
-
 
 @auth_bp.route("/pedir-telefono", methods=["GET", "POST"])
 def pedir_telefono():
@@ -215,13 +177,10 @@ def pedir_telefono():
             flash("Error: sesión de Google no válida.", "error")
             return redirect(url_for("auth.login"))
 
-        conn = get_conn()
+        conn = sqlite3.connect("jumbox.db")
         cursor = conn.cursor()
 
-        cursor.execute(
-            "SELECT id_cliente, nombre, tipo FROM cliente WHERE telefono = ?",
-            (telefono,)
-        )
+        cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (telefono,))
         cliente = cursor.fetchone()
 
         if cliente:
@@ -232,28 +191,23 @@ def pedir_telefono():
                 return redirect(url_for("auth.login"))
         else:
             cursor.execute(
-                "INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo) "
-                "VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo) VALUES (?, ?, ?, ?, ?)",
                 (nombre_google, "", telefono, "", "usuario")
             )
             conn.commit()
-            cursor.execute(
-                "SELECT id_cliente, nombre, tipo FROM cliente WHERE telefono = ?",
-                (telefono,)
-            )
+            cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (telefono,))
             cliente = cursor.fetchone()
 
         conn.close()
 
         session["id_cliente"] = cliente[0]
         session["nombre"] = cliente[1]
-        session["tipo"] = cliente[2]
+        session["tipo"] = cliente[3]
 
         flash("Inicio de sesión exitoso", "success")
         return redirect(url_for("main.home"))
 
     return render_template("pedir_telefono.html")
-
 
 @auth_bp.route('/logout')
 def logout():
