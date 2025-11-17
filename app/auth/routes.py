@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, abort
 import os
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
@@ -8,7 +8,7 @@ from app.utils import get_conn
 
 auth_bp = Blueprint('auth', __name__, template_folder='../../templates/auth')
 
-# Solo se necesita realmente en local, pero no rompe en producción
+# En producción esto no es necesario, pero no rompe.
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
@@ -23,10 +23,19 @@ def create_flow(state=None):
     Usa una URL de callback distinta según si estamos en local o en producción.
     Acepta 'state' para que coincida entre /logingoogle y /auth/callback.
     """
+
+    # 💥 SI FALTAN VARIABLES DE ENTORNO, NO SE PUEDE AUTENTICAR
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        # Esto evita el 500 genérico y te da un mensaje claro en Render
+        raise RuntimeError(
+            "Faltan variables de entorno GOOGLE_CLIENT_ID o GOOGLE_CLIENT_SECRET. "
+            "Configúralas en Render → Environment."
+        )
+
     if request.host.startswith("127.0.0.1") or request.host.startswith("localhost"):
-        redirect = REDIRECT_URI_LOCAL
+        redirect_uri = REDIRECT_URI_LOCAL
     else:
-        redirect = REDIRECT_URI_PROD
+        redirect_uri = REDIRECT_URI_PROD
 
     return Flow.from_client_config(
         client_config={
@@ -43,7 +52,7 @@ def create_flow(state=None):
             "https://www.googleapis.com/auth/userinfo.profile",
         ],
         state=state,
-        redirect_uri=redirect,
+        redirect_uri=redirect_uri,
     )
 
 
@@ -75,7 +84,6 @@ def registro():
             flash("Registro exitoso", "success")
             return redirect(url_for('auth.login'))
         except Exception:
-            # Puede ser IntegrityError u otro error, si querés diferenciar podés capturarla aparte
             flash("El teléfono ya está registrado o ocurrió un error.", "error")
             return redirect(url_for('auth.registro'))
 
@@ -120,7 +128,12 @@ def login():
 
 @auth_bp.route("/logingoogle")
 def logingoogle():
-    flow = create_flow()
+    try:
+        flow = create_flow()
+    except RuntimeError as e:
+        # Si faltan env vars, vas a ver este mensaje en el navegador
+        return str(e), 500
+
     authorization_url, state = flow.authorization_url(
         access_type="offline",
         include_granted_scopes="true",
@@ -132,13 +145,16 @@ def logingoogle():
 
 @auth_bp.route("/auth/callback")
 def callback():
-    # Recuperamos el state
+    # Recuperamos el state de sesión
     state = session.get("state")
     if not state:
         flash("Sesión de Google no válida o expirada. Probá nuevamente.", "error")
         return redirect(url_for("auth.login"))
 
-    flow = create_flow(state=state)
+    try:
+        flow = create_flow(state=state)
+    except RuntimeError as e:
+        return str(e), 500
 
     try:
         flow.fetch_token(authorization_response=request.url)
@@ -173,7 +189,6 @@ def callback():
     conn = get_conn()
     cursor = conn.cursor()
 
-    # Seleccionamos columnas específicas para evitar problemas con índices
     cursor.execute(
         "SELECT id_cliente, nombre, tipo FROM cliente WHERE telefono = ?",
         (phone_number,)
