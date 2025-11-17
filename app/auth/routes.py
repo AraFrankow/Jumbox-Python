@@ -14,24 +14,10 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI_LOCAL = "http://127.0.0.1:5000/auth/callback"
-REDIRECT_URI_PROD = "https://jumboox.onrender.com/auth/callback"
+REDIRECT_URI_PROD = "https://jumbox-python.onrender.com/auth/callback"
 
 
 def create_flow(state=None):
-    """
-    Crea el flujo de OAuth de Google.
-    Usa una URL de callback distinta según si estamos en local o en producción.
-    Acepta 'state' para que coincida entre /logingoogle y /auth/callback.
-    """
-
-    # 💥 SI FALTAN VARIABLES DE ENTORNO, NO SE PUEDE AUTENTICAR
-    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
-        # Esto evita el 500 genérico y te da un mensaje claro en Render
-        raise RuntimeError(
-            "Faltan variables de entorno GOOGLE_CLIENT_ID o GOOGLE_CLIENT_SECRET. "
-            "Configúralas en Render → Environment."
-        )
-
     if request.host.startswith("127.0.0.1") or request.host.startswith("localhost"):
         redirect_uri = REDIRECT_URI_LOCAL
     else:
@@ -44,7 +30,7 @@ def create_flow(state=None):
                 "client_secret": GOOGLE_CLIENT_SECRET,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [REDIRECT_URI_LOCAL, REDIRECT_URI_PROD],
+                "redirect_uris": [REDIRECT_URI_LOCAL, REDIRECT_URI_PROD],  # acá ya queda bien
             }
         },
         scopes=[
