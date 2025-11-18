@@ -125,10 +125,3 @@ def cambiar_sucursal():
         flash("Sucursal cambiada correctamente.", "success")
     return redirect(url_for('main.home'))
 
-@main_bp.errorhandler(404)
-def pagina_no_encontrada(e):
-    return render_template('404.html'), 404
-
-@main_bp.errorhandler(405)
-def pagina_no_encontrada2(e):
-    return render_template('404.html'), 405

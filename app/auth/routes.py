@@ -72,25 +72,26 @@ def login():
         contra = request.form['contra']
 
         conn = sqlite3.connect("jumbox.db")
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id_cliente, nombre, contrasena, tipo
+            SELECT id_cliente, nombre, direccion, telefono, contrasena, tipo
             FROM cliente
             WHERE telefono = ?
         """, (tel,))
         cliente = cursor.fetchone()
         conn.close()
 
-        if cliente and bcrypt.check_password_hash(cliente[2], contra):
-            session['id_cliente'] = cliente[0]
-            session['nombre'] = cliente[1]
-            session['tipo'] = cliente[3]
+        if cliente and bcrypt.check_password_hash(cliente['contrasena'], contra):
+            session['id_cliente'] = cliente['id_cliente']
+            session['nombre'] = cliente['nombre']
+            session['tipo'] = cliente['tipo']
             
             flash("Inicio de sesión exitoso", "success")
             
-            if cliente[3] == 'sucursal':
+            if cliente['tipo'] == 'sucursal':
                 return redirect(url_for('sucursal.panel_sucursal'))
-            elif cliente[3] == 'admin':
+            elif cliente['tipo'] == 'admin':
                 return redirect(url_for('admin.admin'))
             else:
                 return redirect(url_for('main.home'))
@@ -127,28 +128,38 @@ def callback():
         return redirect(url_for("auth.pedir_telefono"))
 
     conn = sqlite3.connect("jumbox.db")
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (phone_number,))
+    cursor.execute("""
+        SELECT id_cliente, nombre, direccion, telefono, contrasena, tipo 
+        FROM cliente 
+        WHERE telefono = ?
+    """, (phone_number,))
     cliente = cursor.fetchone()
 
     if not cliente:
-        cursor.execute(
-            "INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo) VALUES (?, ?, ?, ?, ?)",
-            (nombre_google, "", phone_number, "", "usuario")
-        )
+        cursor.execute("""
+            INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo) 
+            VALUES (?, ?, ?, ?, 'usuario')
+        """, (nombre_google, "", phone_number, ""))
         conn.commit()
-        cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (phone_number,))
+        cursor.execute("""
+            SELECT id_cliente, nombre, direccion, telefono, contrasena, tipo 
+            FROM cliente 
+            WHERE telefono = ?
+        """, (phone_number,))
         cliente = cursor.fetchone()
 
     conn.close()
 
-    session["id_cliente"] = cliente[0]
-    session["nombre"] = cliente[1]
-    session["tipo"] = cliente[3]
+    session["id_cliente"] = cliente['id_cliente']
+    session["nombre"] = cliente['nombre']
+    session["tipo"] = cliente['tipo']
 
     flash("Inicio de sesión exitoso", "success")
     return redirect(url_for("main.home"))
+
 
 @auth_bp.route("/pedir-telefono", methods=["GET", "POST"])
 def pedir_telefono():
@@ -162,31 +173,40 @@ def pedir_telefono():
             return redirect(url_for("auth.login"))
 
         conn = sqlite3.connect("jumbox.db")
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (telefono,))
+        cursor.execute("""
+            SELECT id_cliente, nombre, direccion, telefono, contrasena, tipo 
+            FROM cliente 
+            WHERE telefono = ?
+        """, (telefono,))
         cliente = cursor.fetchone()
 
         if cliente:
-            nombre_existente = cliente[1]
+            nombre_existente = cliente['nombre']
             if nombre_existente != nombre_google:
                 conn.close()
                 flash("El número de teléfono ya está asociado a otra cuenta. Las credenciales no coinciden.", "error")
                 return redirect(url_for("auth.login"))
         else:
-            cursor.execute(
-                "INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo) VALUES (?, ?, ?, ?, ?)",
-                (nombre_google, "", telefono, "", "usuario")
-            )
+            cursor.execute("""
+                INSERT INTO cliente (nombre, direccion, telefono, contrasena, tipo) 
+                VALUES (?, ?, ?, ?, 'usuario')
+            """, (nombre_google, "", telefono, ""))
             conn.commit()
-            cursor.execute("SELECT * FROM cliente WHERE telefono = ?", (telefono,))
+            cursor.execute("""
+                SELECT id_cliente, nombre, direccion, telefono, contrasena, tipo 
+                FROM cliente 
+                WHERE telefono = ?
+            """, (telefono,))
             cliente = cursor.fetchone()
 
         conn.close()
 
-        session["id_cliente"] = cliente[0]
-        session["nombre"] = cliente[1]
-        session["tipo"] = cliente[3]
+        session["id_cliente"] = cliente['id_cliente']
+        session["nombre"] = cliente['nombre']
+        session["tipo"] = cliente['tipo']
 
         flash("Inicio de sesión exitoso", "success")
         return redirect(url_for("main.home"))

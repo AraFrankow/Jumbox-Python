@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 
@@ -26,5 +26,13 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(sucursal_bp)
     app.register_blueprint(admin_bp)
+
+    @app.errorhandler(404)
+    def pagina_no_encontrada(e):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(405)
+    def metodo_no_permitido(e):
+        return render_template('404.html'), 405
 
     return app
