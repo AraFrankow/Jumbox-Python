@@ -13,34 +13,24 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
-REDIRECT_URI_LOCAL = "http://127.0.0.1:5000/auth/callback"
-REDIRECT_URI_PROD = "https://jumboox.onrender.com/auth/callback"
+REDIRECT_URI = "http://127.0.0.1:5000/auth/callback"
 
-print("GOOGLE_CLIENT_ID =", GOOGLE_CLIENT_ID)
-print("GOOGLE_CLIENT_SECRET =", GOOGLE_CLIENT_SECRET)
-
-def create_flow():
-    if request.host.startswith("127.0.0.1") or request.host.startswith("localhost"):
-        redirect = REDIRECT_URI_LOCAL
-    else:
-        redirect = REDIRECT_URI_PROD
-
-    return Flow.from_client_config(
-        client_config={
-            "web": {
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [REDIRECT_URI_LOCAL, REDIRECT_URI_PROD]
-            }
-        },
-        scopes=[
-            "openid",
-            "https://www.googleapis.com/auth/userinfo.profile"
-        ],
-        redirect_uri=redirect
-    )
+flow = Flow.from_client_config(
+    client_config={
+        "web": {
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": [REDIRECT_URI],
+        }
+    },
+    scopes=[
+        "openid",
+        "https://www.googleapis.com/auth/userinfo.profile"
+    ],
+    redirect_uri=REDIRECT_URI
+)
 
 @auth_bp.route('/registro', methods=['GET', 'POST'])
 def registro():
@@ -112,24 +102,18 @@ def login():
 
 @auth_bp.route("/logingoogle")
 def logingoogle():
-    flow = create_flow()
-    authorization_url, state = flow.authorization_url(
-        access_type="offline",
-        include_granted_scopes="true",
-        prompt="consent"
-    )
+    authorization_url, state = flow.authorization_url()
     session["state"] = state
     return redirect(authorization_url)
 
 @auth_bp.route("/auth/callback")
 def callback():
-    flow = create_flow()
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
     request_session = google_requests.Request()
 
     id_info = id_token.verify_oauth2_token(
-        credentials.id_token,
+        credentials._id_token,
         request_session,
         os.environ.get("GOOGLE_CLIENT_ID")
     )
